@@ -27,6 +27,8 @@ export const COLLECTIONS = {
   GRADES: 'grades',
   CLASSROOMS: 'classrooms',
   SEATING_ARRANGEMENTS: 'seatingArrangements',
+  ARTIFACTS: 'artifacts',
+  SUBJECTS: 'subjects',
 } as const;
 
 // Get collection reference

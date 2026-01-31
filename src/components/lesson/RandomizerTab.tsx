@@ -28,7 +28,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
   // Локальное состояние для UI (не сохраняется)
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const [animationStage, setAnimationStage] = useState<'idle' | 'first' | 'pause' | 'second' | 'complete'>('idle');
+  const [_animationStage, setAnimationStage] = useState<'idle' | 'first' | 'pause' | 'second' | 'complete'>('idle');
 
   // Вспомогательные функции для работы с сохраненным состоянием
   const mode = savedState.mode;

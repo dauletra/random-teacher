@@ -11,7 +11,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
   const [minutes, setMinutes] = useState<number>(5);
   const [seconds, setSeconds] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     onModeChange?.(mode);

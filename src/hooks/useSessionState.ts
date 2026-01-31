@@ -21,7 +21,7 @@ export const useSessionState = <T>(
   });
 
   // Ref для debounce таймера
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<number | null>(null);
 
   // Функция для сохранения в sessionStorage с debounce
   const saveState = useCallback((newState: T) => {

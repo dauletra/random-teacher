@@ -1,10 +1,13 @@
 import { useAuth } from '../../hooks/useAuth';
 import { Link, useLocation } from 'react-router-dom';
 import { SITE_NAME } from '../../config/constants';
+import { isAdmin } from '../../config/adminEmails';
 
 export const Header = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+
+  const isDashboard = location.pathname === '/dashboard';
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -13,7 +16,7 @@ export const Header = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <div className="p-2 bg-indigo-600 rounded-lg">
-                {location.pathname === '/' ? (
+                {isDashboard ? (
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -44,7 +47,7 @@ export const Header = () => {
                 )}
               </div>
               <span className="text-xl font-bold text-gray-900">
-                {location.pathname === '/' ? SITE_NAME : 'Все классы'}
+                {isDashboard ? SITE_NAME : 'Все классы'}
               </span>
             </Link>
           </div>
@@ -52,6 +55,22 @@ export const Header = () => {
           <div className="flex items-center space-x-4">
             {user && (
               <>
+                <Link
+                  to="/"
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Витрина
+                </Link>
+
+                {isAdmin(user.email) && (
+                  <Link
+                    to="/admin"
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Админ
+                  </Link>
+                )}
+
                 <div className="flex items-center space-x-3">
                   {user.photoURL ? (
                     <img
