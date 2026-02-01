@@ -15,37 +15,20 @@ export const Header = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="p-2 bg-indigo-600 rounded-lg">
-                {isDashboard ? (
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h6v6H4V6zm0 8h6v6H4v-6zm8-8h6v6h-6V6zm0 8h6v6h-6v-6z"
-                    />
-                  </svg>
-                )}
-              </div>
+              <svg
+                className="w-10 h-10"
+                viewBox="0 0 64 64"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="64" height="64" rx="12" fill="#4f46e5" />
+                <polygon points="32,14 48,24 32,34 16,24" fill="#a5b4fc" />
+                <polygon points="16,24 32,34 32,50 16,40" fill="#818cf8" />
+                <polygon points="32,34 48,24 48,40 32,50" fill="#6366f1" />
+                <polygon
+                  points="50,12 52,16 56,16 53,19 54,23 50,20 46,23 47,19 44,16 48,16"
+                  fill="white"
+                />
+              </svg>
               <span className="text-xl font-bold text-gray-900">
                 {isDashboard ? SITE_NAME : 'Все классы'}
               </span>

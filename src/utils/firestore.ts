@@ -29,6 +29,7 @@ export const COLLECTIONS = {
   SEATING_ARRANGEMENTS: 'seatingArrangements',
   ARTIFACTS: 'artifacts',
   SUBJECTS: 'subjects',
+  TAGS: 'tags',
 } as const;
 
 // Get collection reference

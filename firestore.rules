@@ -79,6 +79,12 @@ service cloud.firestore {
       allow create, update, delete: if isAuthenticated();
     }
 
+    // Tags - public read, admin write
+    match /tags/{tagId} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

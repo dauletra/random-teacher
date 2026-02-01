@@ -2,27 +2,17 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { useSubjects } from '../../hooks/useSubjects';
+import { useTags } from '../../hooks/useTags';
 import { artifactService } from '../../services/artifactService';
-import { TAG_LABELS } from '../../types/artifact.types';
-import type { Artifact, ArtifactTag } from '../../types/artifact.types';
+import type { Artifact } from '../../types/artifact.types';
 import { normalizeArtifactUrl, isValidArtifactUrl, getViewUrl } from '../../utils/artifactUrl';
 import toast from 'react-hot-toast';
-
-const ALL_TAGS: ArtifactTag[] = [
-  'multiplayer',
-  'solo',
-  'game',
-  'test',
-  'rating',
-  'timer',
-  'learning',
-  'theory',
-];
 
 export const ArtifactEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { subjects, loading: subjectsLoading } = useSubjects();
+  const { tags, loading: tagsLoading } = useTags();
   const isNew = id === 'new';
 
   const [loading, setLoading] = useState(!isNew);
@@ -32,7 +22,7 @@ export const ArtifactEditPage = () => {
     description: '',
     artifactUrl: '',
     subjectId: '',
-    tags: [] as ArtifactTag[],
+    tags: [] as string[],
     thumbnail: '',
     order: 0,
     isPublic: true,
@@ -51,7 +41,6 @@ export const ArtifactEditPage = () => {
         setFormData({
           title: artifact.title,
           description: artifact.description,
-          // Показываем полный URL для удобства
           artifactUrl: getViewUrl(artifact.embedUrl),
           subjectId: artifact.subjectId,
           tags: artifact.tags,
@@ -84,7 +73,6 @@ export const ArtifactEditPage = () => {
       return;
     }
 
-    // Validate URL format
     if (!isValidArtifactUrl(formData.artifactUrl.trim())) {
       toast.error('Некорректный URL артефакта. Используйте ссылку с claude.ai или claude.site');
       return;
@@ -97,7 +85,6 @@ export const ArtifactEditPage = () => {
 
     setSaving(true);
     try {
-      // Нормализуем URL — сохраняем только ID
       const normalizedUrl = normalizeArtifactUrl(formData.artifactUrl.trim());
 
       const data = {
@@ -128,16 +115,16 @@ export const ArtifactEditPage = () => {
     }
   };
 
-  const toggleTag = (tag: ArtifactTag) => {
+  const toggleTag = (tagId: string) => {
     setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.includes(tag)
-        ? prev.tags.filter((t) => t !== tag)
-        : [...prev.tags, tag],
+      tags: prev.tags.includes(tagId)
+        ? prev.tags.filter((t) => t !== tagId)
+        : [...prev.tags, tagId],
     }));
   };
 
-  if (loading || subjectsLoading) {
+  if (loading || subjectsLoading || tagsLoading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-12">
@@ -232,22 +219,28 @@ export const ArtifactEditPage = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Теги
             </label>
-            <div className="flex flex-wrap gap-2">
-              {ALL_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    formData.tags.includes(tag)
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {TAG_LABELS[tag]}
-                </button>
-              ))}
-            </div>
+            {tags.length === 0 ? (
+              <p className="text-sm text-amber-600">
+                Сначала добавьте теги в разделе "Теги"
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => toggleTag(tag.id)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      formData.tags.includes(tag.id)
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {tag.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>

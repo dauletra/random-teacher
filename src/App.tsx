@@ -13,6 +13,7 @@ import { JournalPage } from './pages/JournalPage';
 import { ArtifactsListPage } from './pages/admin/ArtifactsListPage';
 import { ArtifactEditPage } from './pages/admin/ArtifactEditPage';
 import { SubjectsPage } from './pages/admin/SubjectsPage';
+import { TagsPage } from './pages/admin/TagsPage';
 
 function App() {
   return (
@@ -109,6 +110,14 @@ function App() {
             element={
               <AdminRoute>
                 <SubjectsPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/tags"
+            element={
+              <AdminRoute>
+                <TagsPage />
               </AdminRoute>
             }
           />

@@ -1,48 +1,41 @@
-import { TAG_LABELS } from '../../types/artifact.types';
-import type { ArtifactTag } from '../../types/artifact.types';
+import type { Tag } from '../../types/artifact.types';
 
 interface TagFilterProps {
-  selectedTags: ArtifactTag[];
-  onChange: (tags: ArtifactTag[]) => void;
+  tags: Tag[];
+  selectedTagIds: string[];
+  onChange: (tagIds: string[]) => void;
 }
 
-const ALL_TAGS: ArtifactTag[] = [
-  'learning',
-  'game',
-  'test',
-  'theory',
-  'timer',
-  'solo',
-  'multiplayer',
-  'rating',
-];
-
-export const TagFilter = ({ selectedTags, onChange }: TagFilterProps) => {
-  const toggleTag = (tag: ArtifactTag) => {
-    if (selectedTags.includes(tag)) {
-      onChange(selectedTags.filter((t) => t !== tag));
+export const TagFilter = ({ tags, selectedTagIds, onChange }: TagFilterProps) => {
+  const toggleTag = (tagId: string) => {
+    if (selectedTagIds.includes(tagId)) {
+      onChange(selectedTagIds.filter((id) => id !== tagId));
     } else {
-      onChange([...selectedTags, tag]);
+      onChange([...selectedTagIds, tagId]);
     }
   };
 
+  if (tags.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
-      {ALL_TAGS.map((tag) => (
+      {tags.map((tag) => (
         <button
-          key={tag}
-          onClick={() => toggleTag(tag)}
+          key={tag.id}
+          onClick={() => toggleTag(tag.id)}
           className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-            selectedTags.includes(tag)
+            selectedTagIds.includes(tag.id)
               ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          {TAG_LABELS[tag]}
+          {tag.label}
         </button>
       ))}
 
-      {selectedTags.length > 0 && (
+      {selectedTagIds.length > 0 && (
         <button
           onClick={() => onChange([])}
           className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700"

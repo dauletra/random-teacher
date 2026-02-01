@@ -1,13 +1,18 @@
-import type { Artifact, Subject } from '../../types/artifact.types';
-import { TAG_LABELS } from '../../types/artifact.types';
+import type { Artifact, Subject, Tag } from '../../types/artifact.types';
 
 interface ArtifactCardProps {
   artifact: Artifact;
   subject?: Subject;
+  tags: Tag[];
   onClick: () => void;
 }
 
-export const ArtifactCard = ({ artifact, subject, onClick }: ArtifactCardProps) => {
+export const ArtifactCard = ({ artifact, subject, tags, onClick }: ArtifactCardProps) => {
+  const getTagLabel = (tagId: string) => {
+    const tag = tags.find((t) => t.id === tagId);
+    return tag?.label || tagId;
+  };
+
   return (
     <button
       onClick={onClick}
@@ -45,12 +50,12 @@ export const ArtifactCard = ({ artifact, subject, onClick }: ArtifactCardProps) 
         )}
 
         <div className="flex flex-wrap gap-1">
-          {artifact.tags.slice(0, 3).map((tag) => (
+          {artifact.tags.slice(0, 3).map((tagId) => (
             <span
-              key={tag}
+              key={tagId}
               className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
             >
-              {TAG_LABELS[tag]}
+              {getTagLabel(tagId)}
             </span>
           ))}
         </div>

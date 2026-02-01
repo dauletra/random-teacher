@@ -1,21 +1,25 @@
 import { useEffect, useState } from 'react';
-import type { Artifact, Subject } from '../../types/artifact.types';
-import { TAG_LABELS } from '../../types/artifact.types';
+import type { Artifact, Subject, Tag } from '../../types/artifact.types';
 import { getEmbedUrl, getViewUrl } from '../../utils/artifactUrl';
 
 interface ArtifactModalProps {
   artifact: Artifact;
   subject?: Subject;
+  tags: Tag[];
   onClose: () => void;
 }
 
-export const ArtifactModal = ({ artifact, subject, onClose }: ArtifactModalProps) => {
+export const ArtifactModal = ({ artifact, subject, tags, onClose }: ArtifactModalProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Генерируем URL динамически из сохранённого ID
   const embedUrl = getEmbedUrl(artifact.embedUrl);
   const viewUrl = getViewUrl(artifact.embedUrl);
+
+  const getTagLabel = (tagId: string) => {
+    const tag = tags.find((t) => t.id === tagId);
+    return tag?.label || tagId;
+  };
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -69,12 +73,12 @@ export const ArtifactModal = ({ artifact, subject, onClose }: ArtifactModalProps
 
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-wrap gap-1">
-              {artifact.tags.map((tag) => (
+              {artifact.tags.map((tagId) => (
                 <span
-                  key={tag}
+                  key={tagId}
                   className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
                 >
-                  {TAG_LABELS[tag]}
+                  {getTagLabel(tagId)}
                 </span>
               ))}
             </div>

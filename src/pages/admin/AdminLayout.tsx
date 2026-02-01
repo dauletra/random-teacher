@@ -11,6 +11,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navItems = [
     { path: '/admin', label: 'Артефакты', exact: true },
     { path: '/admin/subjects', label: 'Предметы' },
+    { path: '/admin/tags', label: 'Теги' },
   ];
 
   const isActive = (path: string, exact?: boolean) => {

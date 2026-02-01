@@ -3,19 +3,25 @@ import { Link } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { useArtifacts } from '../../hooks/useArtifacts';
 import { useSubjects } from '../../hooks/useSubjects';
+import { useTags } from '../../hooks/useTags';
 import { artifactService } from '../../services/artifactService';
-import { TAG_LABELS } from '../../types/artifact.types';
 import type { Artifact } from '../../types/artifact.types';
 import toast from 'react-hot-toast';
 
 export const ArtifactsListPage = () => {
   const { artifacts, loading } = useArtifacts();
   const { subjects } = useSubjects();
+  const { tags } = useTags();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const getSubjectName = (subjectId: string) => {
     const subject = subjects.find(s => s.id === subjectId);
     return subject?.name || 'Без предмета';
+  };
+
+  const getTagLabel = (tagId: string) => {
+    const tag = tags.find(t => t.id === tagId);
+    return tag?.label || tagId;
   };
 
   const handleDelete = async (artifact: Artifact) => {
@@ -110,7 +116,7 @@ export const ArtifactsListPage = () => {
                           key={tag}
                           className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
                         >
-                          {TAG_LABELS[tag]}
+                          {getTagLabel(tag)}
                         </span>
                       ))}
                       {artifact.tags.length > 3 && (

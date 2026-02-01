@@ -1,14 +1,13 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export type ArtifactTag =
-  | 'multiplayer'
-  | 'solo'
-  | 'game'
-  | 'test'
-  | 'rating'
-  | 'timer'
-  | 'learning'
-  | 'theory';
+export interface Tag {
+  id: string;
+  name: string;
+  label: string;
+  order: number;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
 
 export interface Artifact {
   id: string;
@@ -16,7 +15,7 @@ export interface Artifact {
   description: string;
   embedUrl: string;
   subjectId: string;
-  tags: ArtifactTag[];
+  tags: string[]; // tag IDs
   thumbnail?: string;
   order: number;
   isPublic: boolean;
@@ -32,14 +31,3 @@ export interface Subject {
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
-
-export const TAG_LABELS: Record<ArtifactTag, string> = {
-  multiplayer: 'Мультиплеер',
-  solo: 'Одиночный',
-  game: 'Игра',
-  test: 'Тест',
-  rating: 'Рейтинг',
-  timer: 'Таймер',
-  learning: 'Обучение',
-  theory: 'Теория',
-};
