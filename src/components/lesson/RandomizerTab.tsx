@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import type { Student } from '../../types/student.types';
 import { useTabState, type RandomizerTabState } from '../../hooks/useTabState';
+import { usePresentStudents } from '../../hooks/usePresentStudents';
+import { sleep } from '../../utils/async';
 
 interface RandomizerTabProps {
   journalId: string;
@@ -28,7 +30,10 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
   // Локальное состояние для UI (не сохраняется)
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const [_animationStage, setAnimationStage] = useState<'idle' | 'first' | 'pause' | 'second' | 'complete'>('idle');
+  const [, setAnimationStage] = useState<'idle' | 'first' | 'pause' | 'second' | 'complete'>('idle');
+
+  // Хуки
+  const presentStudents = usePresentStudents(students, attendance);
 
   // Вспомогательные функции для работы с сохраненным состоянием
   const mode = savedState.mode;
@@ -68,11 +73,6 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
     }
   }, [removeAfterPick]);
 
-  // Get list of present students
-  const presentStudents = useMemo(() => {
-    return students.filter(student => attendance.get(student.id) ?? true);
-  }, [students, attendance]);
-
   // Get list of available students for randomization
   const getAvailableStudents = (): Student[] => {
     return presentStudents.filter(student => {
@@ -88,8 +88,6 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
     pickedStudents,
     removeAfterPick,
   ]);
-
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const runSingleAnimation = async () => {
     const available = getAvailableStudents();

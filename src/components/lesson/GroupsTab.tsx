@@ -1,9 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import type { Student } from '../../types/student.types';
-import type { StudentConflict } from '../../types/conflict.types';
-import { conflictService } from '../../services/conflictService';
+import { groupingService } from '../../services/groupingService';
 import { useTabState, type GroupsTabState } from '../../hooks/useTabState';
+import { useConflicts } from '../../hooks/useConflicts';
+import { usePresentStudents } from '../../hooks/usePresentStudents';
+import { sleep } from '../../utils/async';
 
 interface GroupsTabProps {
   journalId: string;
@@ -38,7 +40,10 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
   // Локальное состояние для UI (не сохраняется)
   const [animatingGroupIndex, setAnimatingGroupIndex] = useState<number | null>(null);
   const [isDividing, setIsDividing] = useState<boolean>(false);
-  const [conflicts, setConflicts] = useState<StudentConflict[]>([]);
+
+  // Хуки
+  const conflicts = useConflicts(classId);
+  const presentStudents = usePresentStudents(students, attendance);
 
   // Вспомогательные функции для работы с сохраненным состоянием
   const divisionMode = savedState.divisionMode;
@@ -71,20 +76,6 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
     setSavedState(prev => ({ ...prev, selectedInGroup: obj }));
   };
 
-  useEffect(() => {
-    const unsubscribe = conflictService.subscribe(classId, (newConflicts) => {
-      setConflicts(newConflicts);
-    });
-
-    return () => unsubscribe();
-  }, [classId]);
-
-  const presentStudents = useMemo(() => {
-    return students.filter(student => attendance.get(student.id) ?? true);
-  }, [students, attendance]);
-
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
   const declensionGroups = (num: number): string => {
     const lastDigit = num % 10;
     const lastTwoDigits = num % 100;
@@ -104,68 +95,6 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
     return 'групп';
   };
 
-  /**
-   * Улучшенный алгоритм деления на группы с учетом конфликтов
-   * Использует balanced greedy подход для равномерного распределения
-   */
-  const divideIntoGroups = (
-    studentsList: Student[],
-    numGroups: number,
-    conflictsList: StudentConflict[]
-  ): Group[] => {
-    // Создаем пустые группы
-    const resultGroups: Group[] = Array.from({ length: numGroups }, (_, i) => ({
-      id: i + 1,
-      name: `Группа ${i + 1}`,
-      studentIds: [],
-      points: 0
-    }));
-
-    // Перемешиваем студентов для случайности
-    const shuffledStudents = [...studentsList].sort(() => Math.random() - 0.5);
-
-    // Вспомогательная функция: проверка конфликта между студентом и группой
-    const hasConflictWithGroup = (studentId: string, group: Group): boolean => {
-      return group.studentIds.some(existingStudentId =>
-        conflictService.hasConflict(conflictsList, studentId, existingStudentId)
-      );
-    };
-
-    // Вспомогательная функция: найти лучшую группу для студента
-    const findBestGroup = (studentId: string): number => {
-      // Фаза 1: Найти все группы без конфликтов
-      const groupsWithoutConflicts: number[] = [];
-      for (let i = 0; i < numGroups; i++) {
-        if (!hasConflictWithGroup(studentId, resultGroups[i])) {
-          groupsWithoutConflicts.push(i);
-        }
-      }
-
-      // Если есть группы без конфликтов, выбрать самую маленькую
-      if (groupsWithoutConflicts.length > 0) {
-        return groupsWithoutConflicts.reduce((minIdx, idx) => {
-          return resultGroups[idx].studentIds.length < resultGroups[minIdx].studentIds.length
-            ? idx
-            : minIdx;
-        });
-      }
-
-      // Фаза 2: Все группы имеют конфликты - выбрать наименьшую группу
-      // (это крайний случай, который должен быть редким)
-      return resultGroups.reduce((minIdx, group, idx, arr) => {
-        return group.studentIds.length < arr[minIdx].studentIds.length ? idx : minIdx;
-      }, 0);
-    };
-
-    // Распределяем студентов по группам
-    for (const student of shuffledStudents) {
-      const bestGroupIndex = findBestGroup(student.id);
-      resultGroups[bestGroupIndex].studentIds.push(student.id);
-    }
-
-    return resultGroups;
-  };
-
   const handleDivide = async () => {
     if (presentStudents.length === 0) {
       toast.error('Нет присутствующих учеников');
@@ -175,37 +104,31 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
     setIsDividing(true);
     setSelectedInGroup(new Map());
 
-    // Вычисляем количество групп
-    let numGroups: number;
-    if (divisionMode === 'byGroups') {
-      numGroups = Math.min(groupCount, presentStudents.length);
-    } else {
-      numGroups = Math.max(1, Math.ceil(presentStudents.length / groupSize));
-    }
+    // Вычисляем распределение с использованием сервиса
+    const result = divisionMode === 'byGroups'
+      ? groupingService.divideByGroupCount(presentStudents, groupCount, conflicts)
+      : groupingService.divideByGroupSize(presentStudents, groupSize, conflicts);
+
+    const numGroups = result.groups.length;
 
     // Этап 1: Создать пустые группы и показать их
-    const emptyGroups: Group[] = Array.from({ length: numGroups }, (_, i) => ({
-      id: i + 1,
-      name: `Группа ${i + 1}`,
-      studentIds: [],
+    const emptyGroups: Group[] = result.groups.map(g => ({
+      ...g,
       points: 0
     }));
 
-    setGroups(emptyGroups);
+    setGroups(emptyGroups.map(g => ({ ...g, studentIds: [] })));
     await sleep(300);
 
-    // Этап 2: Вычислить финальное распределение с учетом конфликтов
-    const finalGroups = divideIntoGroups(presentStudents, numGroups, conflicts);
-
-    // Этап 3: Анимированное добавление студентов в группы
-    const allStudentIds = finalGroups.flatMap(g => g.studentIds);
-    const tempGroups = [...emptyGroups];
+    // Этап 2: Анимированное добавление студентов в группы
+    const allStudentIds = result.groups.flatMap(g => g.studentIds);
+    const tempGroups = emptyGroups.map(g => ({ ...g, studentIds: [] as string[] }));
 
     for (let i = 0; i < allStudentIds.length; i++) {
       const studentId = allStudentIds[i];
 
       // Найти в какую группу должен попасть этот студент
-      const targetGroupIndex = finalGroups.findIndex(g => g.studentIds.includes(studentId));
+      const targetGroupIndex = result.groups.findIndex(g => g.studentIds.includes(studentId));
 
       if (targetGroupIndex !== -1) {
         // Добавить студента в временные группы
@@ -223,22 +146,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
 
     setIsDividing(false);
 
-    // Проверка на невозможные конфликты
-    let hasUnavoidableConflicts = false;
-    for (const group of finalGroups) {
-      for (let i = 0; i < group.studentIds.length; i++) {
-        for (let j = i + 1; j < group.studentIds.length; j++) {
-          if (conflictService.hasConflict(conflicts, group.studentIds[i], group.studentIds[j])) {
-            hasUnavoidableConflicts = true;
-            break;
-          }
-        }
-        if (hasUnavoidableConflicts) break;
-      }
-      if (hasUnavoidableConflicts) break;
-    }
-
-    if (hasUnavoidableConflicts) {
+    if (result.hasUnavoidableConflicts) {
       toast.error('⚠️ Внимание: не удалось избежать всех конфликтов. Увеличьте количество групп.', {
         duration: 5000,
       });

@@ -443,10 +443,10 @@ export const ClassSettingsPage = () => {
                 // Общий журнал - один список со всеми учениками
                 <>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Список учеников
+                    Список учеников ({students.length})
                   </h3>
                   <div className="space-y-2">
-                    {students.map((student) => (
+                    {students.map((student, index) => (
                       <div
                         key={student.id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
@@ -489,6 +489,7 @@ export const ClassSettingsPage = () => {
                         ) : (
                           <>
                             <span className="font-medium flex-1">
+                              <span className="text-gray-400 mr-2">{index + 1}.</span>
                               {student.lastName} {student.firstName}
                             </span>
                             <div className="flex items-center gap-2">
@@ -533,12 +534,13 @@ export const ClassSettingsPage = () => {
                       ) : (
                         students
                           .filter(s => journalStudents.includes(s.id))
-                          .map((student) => (
+                          .map((student, index) => (
                             <div
                               key={student.id}
                               className="flex items-center justify-between p-3 bg-indigo-50 border border-indigo-200 rounded-md"
                             >
                               <span className="font-medium">
+                                <span className="text-gray-400 mr-2">{index + 1}.</span>
                                 {student.lastName} {student.firstName}
                               </span>
                               <button
@@ -566,12 +568,13 @@ export const ClassSettingsPage = () => {
                       ) : (
                         students
                           .filter(s => !journalStudents.includes(s.id))
-                          .map((student) => (
+                          .map((student, index) => (
                             <div
                               key={student.id}
                               className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
                             >
                               <span className="font-medium">
+                                <span className="text-gray-400 mr-2">{index + 1}.</span>
                                 {student.lastName} {student.firstName}
                               </span>
                               <button

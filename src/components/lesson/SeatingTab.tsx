@@ -8,19 +8,26 @@ import { SeatingGrid } from '../classroom/SeatingGrid';
 import { ClassroomManagementModal } from '../classroom/ClassroomManagementModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useTabState, type SeatingTabState } from '../../hooks/useTabState';
+import { useConflicts } from '../../hooks/useConflicts';
+import { usePresentStudents } from '../../hooks/usePresentStudents';
 
 interface SeatingTabProps {
   journalId: string;
   lessonId: string;
+  classId: string;
   students: Student[];
   attendance: Map<string, boolean>;
 }
 
-export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, students, attendance }) => {
+export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, classId, students, attendance }) => {
   const { user } = useAuth();
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
   const [showManagementModal, setShowManagementModal] = useState(false);
+
+  // Хуки
+  const conflicts = useConflicts(classId);
+  const presentStudents = usePresentStudents(students, attendance);
 
   // Сохраняемое состояние вкладки
   const [savedState, setSavedState] = useTabState<SeatingTabState>(
@@ -29,6 +36,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, stu
     'seating',
     {
       selectedClassroomId: '',
+      seatingMode: 'pairs',
       desks: [],
     }
   );
@@ -38,12 +46,17 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, stu
     setSavedState(prev => ({ ...prev, selectedClassroomId: id }));
   };
 
+  const seatingMode = savedState.seatingMode || 'pairs';
+  const setSeatingMode = (mode: 'single' | 'pairs') => {
+    setSavedState(prev => ({ ...prev, seatingMode: mode }));
+  };
+
   const desks = savedState.desks;
   const setDesks = (newDesks: SeatingDesk[]) => {
     setSavedState(prev => ({ ...prev, desks: newDesks }));
   };
 
-  // Загрузка кабинетов учителя и рассадки для журнала
+  // Загрузка кабинетов учителя
   useEffect(() => {
     loadData();
   }, [journalId, user]);
@@ -112,10 +125,11 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, stu
 
     const presentStudents = students.filter(s => attendance.get(s.id) ?? true);
     const totalDesks = desks.length;
-    const maxCapacity = totalDesks * 2; // Максимум 2 ученика на парту
+    const maxCapacity = seatingMode === 'single' ? totalDesks : totalDesks * 2;
 
     if (presentStudents.length > maxCapacity) {
-      toast.error(`Слишком много учеников! Учеников: ${presentStudents.length}, максимум мест: ${maxCapacity} (${totalDesks} парт × 2)`);
+      const modeText = seatingMode === 'single' ? '1' : '2';
+      toast.error(`Слишком много учеников! Учеников: ${presentStudents.length}, максимум мест: ${maxCapacity} (${totalDesks} парт × ${modeText})`);
       return;
     }
 
@@ -124,9 +138,22 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, stu
       return;
     }
 
-    const newDesks = seatingService.generateRandomSeating(classroom, students, attendance);
-    setDesks(newDesks);
-    toast.success('Рассадка создана');
+    const result = seatingService.generateRandomSeating(
+      classroom,
+      students,
+      attendance,
+      seatingMode,
+      seatingMode === 'pairs' ? conflicts : []
+    );
+    setDesks(result.desks);
+
+    if (seatingMode === 'pairs' && result.hasUnavoidableConflicts) {
+      toast.error('Внимание: не удалось избежать всех конфликтов при рассадке', { duration: 4000 });
+    } else if (seatingMode === 'pairs' && conflicts.length > 0) {
+      toast.success('Рассадка создана с учетом конфликтов');
+    } else {
+      toast.success('Рассадка создана');
+    }
   };
 
   const handleClearSeating = () => {
@@ -217,7 +244,6 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, stu
   // Подсчет статистики
   const totalSeated = desks.reduce((sum, desk) => sum + desk.studentIds.length, 0);
   const totalDesks = desks.length;
-  const presentStudents = students.filter(s => attendance.get(s.id) ?? true);
   const isEmpty = totalSeated === 0;
 
   // Нет кабинетов - показать empty state
@@ -273,6 +299,34 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, stu
         >
           ⚙️
         </button>
+
+        <div className="h-6 w-px bg-gray-300" />
+
+        {/* Выбор режима рассадки */}
+        <div className="flex rounded-md border border-gray-300 overflow-hidden">
+          <button
+            onClick={() => setSeatingMode('single')}
+            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+              seatingMode === 'single'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+            title="По одному на парту"
+          >
+            👤 По одному
+          </button>
+          <button
+            onClick={() => setSeatingMode('pairs')}
+            className={`px-3 py-1.5 text-sm font-medium border-l border-gray-300 transition-colors ${
+              seatingMode === 'pairs'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+            title="По двое на парту"
+          >
+            👥 По двое
+          </button>
+        </div>
 
         <div className="h-6 w-px bg-gray-300" />
 

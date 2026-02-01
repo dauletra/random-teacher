@@ -348,7 +348,7 @@ export const JournalPage = () => {
         <div className="p-4 border-b flex gap-2 items-center border-gray-200">
           <div>
             <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/dashboard')}
                 className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -587,8 +587,14 @@ export const JournalPage = () => {
               />
             )}
 
-            {activeTab === 'seating' && journalId && currentLesson && (
-              <SeatingTab journalId={journalId} lessonId={currentLesson.id} students={students} attendance={attendance} />
+            {activeTab === 'seating' && journal && journalId && currentLesson && (
+              <SeatingTab
+                journalId={journalId}
+                lessonId={currentLesson.id}
+                classId={journal.classId}
+                students={students}
+                attendance={attendance}
+              />
             )}
 
             {activeTab === 'group' && journal && journalId && currentLesson && (

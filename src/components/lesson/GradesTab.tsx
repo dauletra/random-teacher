@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { lessonService } from '../../services/lessonService';
 import { Timestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
@@ -330,7 +330,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
     );
   }
 
-  const monthGroups = getMonthGroups();
+  const monthGroups = useMemo(() => getMonthGroups(), [lessonsData]);
 
   return (
     <div className="bg-white rounded-lg shadow">
