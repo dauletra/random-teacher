@@ -88,10 +88,27 @@ npm run lint
 ## Оптимизация производительности
 Приложение оптимизировано для работы с Firestore:
 
+### Firestore Persistence (офлайн-кэш)
+- Включен `persistentLocalCache` с `persistentMultipleTabManager` в `src/config/firebase.ts`
+- Повторные открытия страниц загружаются из IndexedDB мгновенно
+- Поддержка нескольких вкладок браузера одновременно
+
+### Параллелизация запросов (JournalPage)
+- Загрузка данных журнала разбита на 3 фазы с `Promise.all()`
+- Фаза 1: journal + todayLesson параллельно
+- Фаза 2: class + studentIds + allLessons параллельно
+- Фаза 3: batch load students по ID
+- Attendance + grades также загружаются параллельно
+
 ### Batch-загрузка данных
 - Функция `getDocumentsByIds()` для загрузки множества документов за минимальное количество запросов
 - Автоматическое разбиение на батчи по 10 элементов (ограничение Firestore для 'in' запросов)
 - Используется в `studentService.getByIds()` для загрузки студентов
+
+### Детерминистические ID (journalStudents)
+- `journalService.addStudent()` использует ID формата `${journalId}_${studentId}`
+- Позволяет `setDoc` без предварительного чтения (нет N+1)
+- `removeStudent()` удаляет напрямую по ID без query
 
 ### Централизованная загрузка
 - Хук `useAllJournals` загружает журналы для всех классов одновременно
@@ -99,14 +116,26 @@ npm run lint
 - Real-time обновления через `onSnapshot`
 
 ### Система кэширования
-- In-memory кэш с TTL (5 минут по умолчанию)
-- Автоматическая инвалидация при изменении данных
-- Pattern-based очистка кэша
-- Реализована в `src/utils/cache.ts`
+- In-memory кэш с TTL (5 минут по умолчанию) в `src/utils/cache.ts`
+- Кэшируются: students, journals, classes, classrooms, attendance, grades
+- Точечная инвалидация кэша (по classId, по lessonId) вместо полного сброса
+- Pattern-based очистка только для `students:ids:` (составные ключи)
 
-### Результаты оптимизации
-- Скорость загрузки увеличена в 3-5 раз
-- Количество запросов к Firestore уменьшено на 75-80%
-- Мгновенная загрузка при повторном открытии страниц (кэш)
+### Табы без перемонтирования
+- Вкладки журнала (Рандомайзер, Рассадка, Группы, Все оценки) используют `display: none` вместо условного рендеринга
+- Компоненты остаются в DOM при переключении — данные не теряются
+- `dataLoadedRef` в GradesTab и SeatingTab предотвращает повторную загрузку
 
-Подробности в [OPTIMIZATION_REPORT.md](./OPTIMIZATION_REPORT.md)
+### Пагинация в GradesTab
+- Загружаются только последние 15 уроков (вместо всех)
+- Кнопка "Загрузить ещё" для подгрузки старых уроков порциями
+- Константа `LESSONS_PER_PAGE = 15`
+
+### useSessionState — debounced persistence
+- Хук `useSessionState` сохраняет в sessionStorage через debounce (500ms по умолчанию)
+- Гарантированное сохранение при unmount через ref
+- Используется через `useTabState` для состояния вкладок (Randomizer, Seating, Groups)
+
+### Функциональные обновления Map
+- `handleGradeChange` в JournalPage использует `setGradeInputs(prev => ...)` вместо мутации текущего Map
+- Предотвращает нестабильное поведение при быстром вводе

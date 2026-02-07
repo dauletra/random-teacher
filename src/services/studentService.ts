@@ -89,18 +89,32 @@ export const studentService = {
       lastName?: string;
     }
   ): Promise<void> {
+    // Read existing student to get classId for targeted cache invalidation
+    const existing = cache.get<Student>(cacheKeys.student(studentId));
+
     await updateDocument<Student>(COLLECTIONS.STUDENTS, studentId, data);
 
-    // Invalidate cache for this student
+    // Invalidate only this student's caches
     cache.delete(cacheKeys.student(studentId));
-    cache.invalidatePattern('students:');
+    if (existing?.classId) {
+      cache.delete(cacheKeys.students(existing.classId));
+    }
+    // Invalidate composite ID caches that may contain this student
+    cache.invalidatePattern('students:ids:');
   },
 
   async delete(studentId: string): Promise<void> {
+    // Read existing student to get classId for targeted cache invalidation
+    const existing = cache.get<Student>(cacheKeys.student(studentId));
+
     await deleteDocument(COLLECTIONS.STUDENTS, studentId);
 
-    // Invalidate cache for this student
+    // Invalidate only this student's caches
     cache.delete(cacheKeys.student(studentId));
-    cache.invalidatePattern('students:');
+    if (existing?.classId) {
+      cache.delete(cacheKeys.students(existing.classId));
+    }
+    // Invalidate composite ID caches that may contain this student
+    cache.invalidatePattern('students:ids:');
   },
 };

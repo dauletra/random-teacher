@@ -229,12 +229,12 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* Control Panel */}
-      <div className="flex items-center gap-3 px-6 py-3 bg-white border-b border-gray-200">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-6 py-2 md:py-3 bg-white border-b border-gray-200">
         {/* Mode buttons */}
         <button
           onClick={() => setDivisionMode('byGroups')}
           disabled={isDividing}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+          className={`px-2 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${
             divisionMode === 'byGroups'
               ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -245,7 +245,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
         <button
           onClick={() => setDivisionMode('bySize')}
           disabled={isDividing}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+          className={`px-2 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${
             divisionMode === 'bySize'
               ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -254,7 +254,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
           По размеру
         </button>
 
-        <div className="h-6 w-px bg-gray-300"></div>
+        <div className="hidden md:block h-6 w-px bg-gray-300"></div>
 
         {/* Number selector */}
         <select
@@ -268,7 +268,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
             }
           }}
           disabled={isDividing}
-          className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-2 md:px-3 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {[2, 3, 4, 5, 6, 7, 8].map(num => (
             <option key={num} value={num}>
@@ -281,18 +281,18 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
         <button
           onClick={handleDivide}
           disabled={animatingGroupIndex !== null || isDividing}
-          className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-3 md:px-4 py-1.5 bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isDividing ? 'Деление...' : 'Разделить'}
         </button>
 
-        <div className="h-6 w-px bg-gray-300"></div>
+        <div className="hidden md:block h-6 w-px bg-gray-300"></div>
 
         {/* Reset button */}
         <button
           onClick={handleReset}
           disabled={animatingGroupIndex !== null || isDividing || groups.length === 0}
-          className="px-4 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Сброс
         </button>
@@ -309,8 +309,8 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="flex-1 overflow-y-auto p-3 md:p-6 pb-16 md:pb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {groups.map((group, groupIndex) => (
               <div key={`group-${group.id}`} className="bg-gray-50 rounded-lg border border-gray-300 p-4">
                 {/* Group header */}

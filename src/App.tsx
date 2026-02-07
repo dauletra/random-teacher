@@ -71,7 +71,7 @@ function App() {
             path="/classes/:classId/settings"
             element={
               <ProtectedRoute>
-                <Layout>
+                <Layout headerVariant="back" mobileTitle="Настройки">
                   <ClassSettingsPage />
                 </Layout>
               </ProtectedRoute>
@@ -81,7 +81,7 @@ function App() {
             path="/journals/:journalId"
             element={
               <ProtectedRoute>
-                <Layout>
+                <Layout fullWidth headerVariant="hidden-mobile">
                   <JournalPage />
                 </Layout>
               </ProtectedRoute>

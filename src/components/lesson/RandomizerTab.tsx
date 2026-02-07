@@ -254,15 +254,15 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
 
   return (
     <div className="h-full flex flex-col">
-      {/* Compact Control Panel - Single Line */}
-      <div className="flex items-center gap-3 px-6 py-3 bg-white border-b border-gray-200">
+      {/* Compact Control Panel */}
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-6 py-2 md:py-3 bg-white border-b border-gray-200">
         {/* Mode Selection */}
-        <div className="flex gap-2">
+        <div className="flex gap-1 md:gap-2">
           <button
             onClick={() => setMode('one')}
             disabled={isAnimating}
             className={`
-              px-3 py-1.5 rounded-md text-sm font-medium transition-all
+              px-2 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all
               ${mode === 'one'
                 ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -276,7 +276,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
             onClick={() => setMode('two')}
             disabled={isAnimating}
             className={`
-              px-3 py-1.5 rounded-md text-sm font-medium transition-all
+              px-2 md:px-3 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all
               ${mode === 'two'
                 ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -289,7 +289,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
         </div>
 
         {/* Remove After Pick Option */}
-        <label className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
+        <label className="flex items-center gap-1.5 text-xs md:text-sm text-gray-700 cursor-pointer">
           <input
             type="checkbox"
             checked={removeAfterPick}
@@ -300,14 +300,14 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
           Убирать
         </label>
 
-        {/* Divider */}
-        <div className="h-6 w-px bg-gray-300" />
+        {/* Divider - hidden on small screens */}
+        <div className="hidden md:block h-6 w-px bg-gray-300" />
 
         {/* Action Buttons */}
         <button
           onClick={handleRandomPick}
           disabled={isAnimating || availableStudents.length === 0}
-          className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+          className="px-3 md:px-4 py-1.5 bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -318,13 +318,13 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
         <button
           onClick={handleReset}
           disabled={isAnimating || pickedStudents.size === 0}
-          className="px-4 py-1.5 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Сброс
         </button>
 
         {/* Statistics */}
-        <div className="ml-auto text-sm text-gray-600">
+        <div className="ml-auto text-xs md:text-sm text-gray-600">
           <span className="font-medium">{availableStudents.length}</span>
           <span className="text-gray-400 mx-1">/</span>
           <span>{presentStudents.length}</span>
@@ -333,27 +333,27 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
 
       {/* Result Display Area */}
       {selectedStudents.length > 0 && (
-        <div className="px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200">
-          <div className="flex items-center justify-center gap-8">
+        <div className="px-3 md:px-6 py-3 md:py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200">
+          <div className="flex items-center justify-center gap-4 md:gap-8">
             {selectedStudents.length === 1 ? (
               <div className="text-center">
-                <p className="text-sm text-green-700 font-medium mb-1">Выбран ученик:</p>
-                <p className="text-4xl font-bold text-green-900">
+                <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Выбран ученик:</p>
+                <p className="text-2xl md:text-4xl font-bold text-green-900">
                   {selectedStudents[0].firstName} {selectedStudents[0].lastName[0]}.
                 </p>
               </div>
             ) : (
               <>
                 <div className="text-center">
-                  <p className="text-sm text-green-700 font-medium mb-1">Ученик 1:</p>
-                  <p className="text-3xl font-bold text-green-900">
+                  <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Ученик 1:</p>
+                  <p className="text-xl md:text-3xl font-bold text-green-900">
                     {selectedStudents[0].firstName} {selectedStudents[0].lastName[0]}.
                   </p>
                 </div>
-                <div className="text-5xl font-bold text-green-400">VS</div>
+                <div className="text-3xl md:text-5xl font-bold text-green-400">VS</div>
                 <div className="text-center">
-                  <p className="text-sm text-green-700 font-medium mb-1">Ученик 2:</p>
-                  <p className="text-3xl font-bold text-green-900">
+                  <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Ученик 2:</p>
+                  <p className="text-xl md:text-3xl font-bold text-green-900">
                     {selectedStudents[1].firstName} {selectedStudents[1].lastName[0]}.
                   </p>
                 </div>
@@ -364,8 +364,8 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
       )}
 
       {/* Student Grid */}
-      <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-        <div className="grid grid-cols-4 xl:grid-cols-5 gap-3">
+      <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-gray-50 pb-16 md:pb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
           {presentStudents.map(student => {
             const status = getStudentStatus(student.id);
             const isExcluded = excludedStudents.has(student.id);
@@ -376,7 +376,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
               <div
                 key={student.id}
                 className={`
-                  relative p-4 rounded-lg border-2 transition-all duration-200
+                  relative p-3 md:p-4 rounded-lg border-2 transition-all duration-200
                   ${isHighlighted
                     ? 'border-indigo-500 bg-indigo-50 shadow-lg ring-4 ring-indigo-200 scale-105'
                     : status === 'selected'
@@ -402,8 +402,8 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
                 />
 
                 {/* Student Name */}
-                <div className="text-center pt-4">
-                  <p className={`font-bold text-lg whitespace-nowrap truncate ${
+                <div className="text-center pt-3 md:pt-4">
+                  <p className={`font-bold text-sm md:text-lg whitespace-nowrap truncate ${
                     status === 'excluded' ? 'text-gray-400' : 'text-gray-900'
                   }`}>
                     {student.firstName} {student.lastName[0]}.
@@ -412,13 +412,13 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
 
                 {/* Status Indicator */}
                 {isSelected && (
-                  <div className="absolute top-2 right-2 text-green-600 font-bold text-2xl">
+                  <div className="absolute top-1 right-1 md:top-2 md:right-2 text-green-600 font-bold text-xl md:text-2xl">
                     ✓
                   </div>
                 )}
 
                 {status === 'picked' && !isSelected && (
-                  <div className="absolute top-2 right-2 text-gray-500 font-bold text-lg">
+                  <div className="absolute top-1 right-1 md:top-2 md:right-2 text-gray-500 font-bold text-base md:text-lg">
                     ✓
                   </div>
                 )}

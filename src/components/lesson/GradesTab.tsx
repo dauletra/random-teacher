@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { lessonService } from '../../services/lessonService';
 import { Timestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
@@ -27,21 +27,54 @@ interface EditingCell {
   lessonId: string;
 }
 
+const LESSONS_PER_PAGE = 15;
+
 export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => {
   const [loading, setLoading] = useState(true);
   const [lessonsData, setLessonsData] = useState<LessonData[]>([]);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [allLessons, setAllLessons] = useState<Lesson[]>([]);
+  const [loadedCount, setLoadedCount] = useState(LESSONS_PER_PAGE);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const dataLoadedRef = useRef(false);
 
   useEffect(() => {
-    loadAllData();
+    // Prevent re-loading when tab becomes visible again (display:none -> block)
+    if (!dataLoadedRef.current) {
+      loadAllData();
+    }
   }, [journalId]);
+
+  const loadLessonDetails = async (lessons: Lesson[]): Promise<LessonData[]> => {
+    if (lessons.length === 0) return [];
+
+    // Load grades and attendance for given lessons in parallel
+    const allData = await Promise.all(
+      lessons.map(async (lesson) => {
+        const [grades, attendance] = await Promise.all([
+          lessonService.getGrades(lesson.id),
+          lessonService.getAttendance(lesson.id)
+        ]);
+
+        const gradesMap = new Map<string, Grade>();
+        grades.forEach(g => gradesMap.set(g.studentId, g));
+
+        const attendanceMap = new Map<string, boolean>();
+        attendance.forEach(a => attendanceMap.set(a.studentId, a.isPresent));
+
+        return { lesson, grades: gradesMap, attendance: attendanceMap };
+      })
+    );
+
+    return allData;
+  };
 
   const loadAllData = async () => {
     try {
       setLoading(true);
 
-      // Load all lessons
+      // Load all lessons (just the lesson list — lightweight)
       const lessons = await lessonService.getByJournalId(journalId);
 
       // Sort lessons from oldest to newest for table display
@@ -49,36 +82,46 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
         a.date.toMillis() - b.date.toMillis()
       );
 
-      // Load grades and attendance for all lessons in parallel
-      const allData = await Promise.all(
-        sortedLessons.map(async (lesson) => {
-          const [grades, attendance] = await Promise.all([
-            lessonService.getGrades(lesson.id),
-            lessonService.getAttendance(lesson.id)
-          ]);
+      setAllLessons(sortedLessons);
 
-          // Convert to Maps for quick lookup
-          const gradesMap = new Map<string, Grade>();
-          grades.forEach(g => gradesMap.set(g.studentId, g));
+      // Load details only for the latest N lessons (end of array = most recent)
+      const initialSlice = sortedLessons.slice(-LESSONS_PER_PAGE);
+      const initialData = await loadLessonDetails(initialSlice);
 
-          const attendanceMap = new Map<string, boolean>();
-          attendance.forEach(a => attendanceMap.set(a.studentId, a.isPresent));
-
-          return {
-            lesson,
-            grades: gradesMap,
-            attendance: attendanceMap
-          };
-        })
-      );
-
-      setLessonsData(allData);
+      setLessonsData(initialData);
+      setLoadedCount(LESSONS_PER_PAGE);
+      dataLoadedRef.current = true;
     } catch (error) {
       console.error('Error loading grades data:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleLoadMore = async () => {
+    try {
+      setLoadingMore(true);
+
+      const newCount = loadedCount + LESSONS_PER_PAGE;
+      // Load the next batch (older lessons)
+      const startIdx = Math.max(0, allLessons.length - newCount);
+      const endIdx = allLessons.length - loadedCount;
+      const nextSlice = allLessons.slice(startIdx, endIdx);
+
+      const moreData = await loadLessonDetails(nextSlice);
+
+      // Prepend older lessons to the beginning
+      setLessonsData(prev => [...moreData, ...prev]);
+      setLoadedCount(newCount);
+    } catch (error) {
+      console.error('Error loading more grades:', error);
+      toast.error('Ошибка загрузки данных');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const hasMore = allLessons.length > loadedCount;
 
   const formatDay = (date: Timestamp): string => {
     return date.toDate().getDate().toString();
@@ -314,6 +357,8 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
     };
   };
 
+  const monthGroups = useMemo(() => getMonthGroups(), [lessonsData]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -330,16 +375,34 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
     );
   }
 
-  const monthGroups = useMemo(() => getMonthGroups(), [lessonsData]);
-
   return (
     <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">Все оценки</h3>
-        <p className="text-sm text-gray-600 mt-1">
-          Всего уроков: {lessonsData.length}
+      <div className="p-3 md:p-4 border-b border-gray-200">
+        <h3 className="text-base md:text-lg font-semibold text-gray-900">Все оценки</h3>
+        <p className="text-xs md:text-sm text-gray-600 mt-1">
+          Показано уроков: {lessonsData.length} из {allLessons.length}
         </p>
       </div>
+
+      {/* Load More button (older lessons) */}
+      {hasMore && (
+        <div className="px-3 md:px-4 py-2 border-b border-gray-200 bg-gray-50">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="w-full px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loadingMore ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                Загрузка...
+              </span>
+            ) : (
+              `Загрузить ещё ${Math.min(LESSONS_PER_PAGE, allLessons.length - loadedCount)} уроков`
+            )}
+          </button>
+        </div>
+      )}
 
       <div className="overflow-auto max-h-[calc(100vh-300px)]">
         <table className="border-collapse table-fixed w-auto">
@@ -347,16 +410,16 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
             {/* Month row */}
             <tr>
               <th
-                className="sticky left-0 bg-white z-30 border-r-2 border-b border-gray-300 px-4 py-2 w-48"
+                className="sticky left-0 bg-white z-30 border-r-2 border-b border-gray-300 px-2 md:px-4 py-2 w-28 md:w-48"
                 rowSpan={2}
               >
-                <div className="text-left font-semibold text-gray-900">Ученик</div>
+                <div className="text-left text-xs md:text-sm font-semibold text-gray-900">Ученик</div>
               </th>
               {monthGroups.map((group, idx) => (
                 <th
                   key={idx}
                   colSpan={group.lessons.length}
-                  className="border-b border-l border-gray-300 px-2 py-2 text-center text-sm font-semibold text-gray-700 bg-gray-50"
+                  className="border-b border-l border-gray-300 px-1 md:px-2 py-1 md:py-2 text-center text-[10px] md:text-sm font-semibold text-gray-700 bg-gray-50"
                 >
                   {group.month}
                 </th>
@@ -368,7 +431,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
               {lessonsData.map(({ lesson }) => (
                 <th
                   key={lesson.id}
-                  className="border-b border-l border-gray-300 px-2 py-2 text-center text-xs font-medium text-gray-600 bg-gray-50 w-14"
+                  className="border-b border-l border-gray-300 px-1 md:px-2 py-1 md:py-2 text-center text-[10px] md:text-xs font-medium text-gray-600 bg-gray-50 w-9 md:w-14"
                 >
                   {formatDay(lesson.date)}
                 </th>
@@ -379,8 +442,8 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
           <tbody>
             {students.map((student) => (
               <tr key={student.id} className="hover:bg-gray-50">
-                <td className="sticky left-0 bg-white z-10 border-r-2 border-b border-gray-200 px-4 py-3 w-48">
-                  <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                <td className="sticky left-0 bg-white z-10 border-r-2 border-b border-gray-200 px-2 md:px-4 py-2 md:py-3 w-28 md:w-48">
+                  <div className="text-xs md:text-sm font-medium text-gray-900 whitespace-nowrap truncate">
                     {student.firstName} {student.lastName[0]}.
                   </div>
                 </td>
@@ -391,22 +454,23 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
                   return (
                     <td
                       key={lessonData.lesson.id}
-                      className={`border-b border-l border-gray-200 px-1 py-1 text-center text-sm w-14 ${cell.className} ${cell.editable ? 'cursor-pointer hover:shadow-[inset_0_0_0_2px_rgb(165_180_252)]' : ''}`}
+                      className={`border-b border-l border-gray-200 px-0.5 md:px-1 py-0.5 md:py-1 text-center text-xs md:text-sm w-9 md:w-14 ${cell.className} ${cell.editable ? 'cursor-pointer hover:shadow-[inset_0_0_0_2px_rgb(165_180_252)]' : ''}`}
                       onClick={() => cell.editable && handleCellClick(student.id, lessonData.lesson.id, lessonData)}
                     >
                       {isEditing ? (
                         <input
                           type="text"
+                          inputMode="numeric"
                           value={editValue}
                           onChange={(e) => handleEditChange(e.target.value)}
                           onBlur={() => handleSaveGrade(student.id, lessonData.lesson.id)}
                           onKeyDown={(e) => handleKeyDown(e, student.id, lessonData.lesson.id)}
                           autoFocus
                           placeholder="-"
-                          className="w-full px-1 py-1 text-sm text-center border border-indigo-500 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-0.5 md:px-1 py-0.5 md:py-1 text-xs md:text-sm text-center border border-indigo-500 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                       ) : (
-                        <div className="px-1 py-1">{cell.content}</div>
+                        <div className="px-0.5 md:px-1 py-0.5 md:py-1">{cell.content}</div>
                       )}
                     </td>
                   );
@@ -418,29 +482,29 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
       </div>
 
       {/* Legend */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-green-50 border border-green-300 rounded"></div>
-            <span className="text-gray-600">8-10 баллов</span>
+      <div className="p-3 md:p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs">
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-4 h-4 md:w-6 md:h-6 bg-green-50 border border-green-300 rounded"></div>
+            <span className="text-gray-600">8-10</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-indigo-50 border border-indigo-300 rounded"></div>
-            <span className="text-gray-600">5-7 баллов</span>
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-4 h-4 md:w-6 md:h-6 bg-indigo-50 border border-indigo-300 rounded"></div>
+            <span className="text-gray-600">5-7</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-yellow-50 border border-yellow-300 rounded"></div>
-            <span className="text-gray-600">1-4 балла</span>
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-4 h-4 md:w-6 md:h-6 bg-yellow-50 border border-yellow-300 rounded"></div>
+            <span className="text-gray-600">1-4</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-red-50 border border-red-300 rounded flex items-center justify-center text-red-600 font-medium">
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-4 h-4 md:w-6 md:h-6 bg-red-50 border border-red-300 rounded flex items-center justify-center text-red-600 font-medium text-[8px] md:text-xs">
               н
             </div>
-            <span className="text-gray-600">Отсутствовал</span>
+            <span className="text-gray-600">Отсут.</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gray-50 border border-gray-200 rounded"></div>
-            <span className="text-gray-600">Без оценки</span>
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-4 h-4 md:w-6 md:h-6 bg-gray-50 border border-gray-200 rounded"></div>
+            <span className="text-gray-600">Нет оценки</span>
           </div>
         </div>
       </div>

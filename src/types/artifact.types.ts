@@ -2,7 +2,6 @@ import type { Timestamp } from 'firebase/firestore';
 
 export interface Tag {
   id: string;
-  name: string;
   label: string;
   order: number;
   createdAt?: Timestamp;

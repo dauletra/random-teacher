@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import type { Student } from '../../types/student.types';
 import type { Classroom, SeatingDesk } from '../../types/classroom.types';
@@ -56,9 +56,14 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     setSavedState(prev => ({ ...prev, desks: newDesks }));
   };
 
+  // Track if data was already loaded (prevent re-fetch when tab becomes visible)
+  const dataLoadedRef = useRef(false);
+
   // Загрузка кабинетов учителя
   useEffect(() => {
-    loadData();
+    if (!dataLoadedRef.current) {
+      loadData();
+    }
   }, [journalId, user]);
 
   // Синхронизация выбранного кабинета с доступными кабинетами
@@ -93,6 +98,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
       if (classroomsData.length > 0) {
         setSelectedClassroomId(classroomsData[0].id);
       }
+      dataLoadedRef.current = true;
     } catch (error) {
       console.error('Error loading seating data:', error);
       toast.error('Ошибка загрузки данных');
@@ -276,17 +282,17 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      {/* Компактная панель управления - единая строка */}
-      <div className="flex items-center gap-3 px-6 py-3 bg-white border-b border-gray-200">
+      {/* Компактная панель управления */}
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-6 py-2 md:py-3 bg-white border-b border-gray-200">
         {/* Выбор кабинета */}
         <select
           value={selectedClassroomId}
           onChange={(e) => handleClassroomChange(e.target.value)}
-          className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="px-2 md:px-3 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           {classrooms.map(classroom => (
             <option key={classroom.id} value={classroom.id}>
-              🏫 {classroom.name}
+              {classroom.name}
             </option>
           ))}
         </select>
@@ -294,64 +300,67 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
         {/* Кнопка настроек кабинетов */}
         <button
           onClick={() => setShowManagementModal(true)}
-          className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          className="px-2 md:px-3 py-1.5 text-xs md:text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
           title="Управление кабинетами"
         >
           ⚙️
         </button>
 
-        <div className="h-6 w-px bg-gray-300" />
+        <div className="hidden md:block h-6 w-px bg-gray-300" />
 
         {/* Выбор режима рассадки */}
         <div className="flex rounded-md border border-gray-300 overflow-hidden">
           <button
             onClick={() => setSeatingMode('single')}
-            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium transition-colors ${
               seatingMode === 'single'
                 ? 'bg-indigo-600 text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
             title="По одному на парту"
           >
-            👤 По одному
+            <span className="hidden md:inline">👤 По одному</span>
+            <span className="md:hidden">👤</span>
           </button>
           <button
             onClick={() => setSeatingMode('pairs')}
-            className={`px-3 py-1.5 text-sm font-medium border-l border-gray-300 transition-colors ${
+            className={`px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium border-l border-gray-300 transition-colors ${
               seatingMode === 'pairs'
                 ? 'bg-indigo-600 text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
             title="По двое на парту"
           >
-            👥 По двое
+            <span className="hidden md:inline">👥 По двое</span>
+            <span className="md:hidden">👥</span>
           </button>
         </div>
 
-        <div className="h-6 w-px bg-gray-300" />
+        <div className="hidden md:block h-6 w-px bg-gray-300" />
 
         {/* Главные действия */}
         <button
           onClick={handleGenerateSeating}
           disabled={presentStudents.length === 0 || !selectedClassroom}
-          className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+          className="px-3 md:px-4 py-1.5 bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Рассадить
+          <span className="hidden sm:inline">Рассадить</span>
         </button>
 
         <button
           onClick={handleClearSeating}
           disabled={isEmpty || !selectedClassroom}
-          className="px-4 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Очистить
+          <span className="hidden sm:inline">Очистить</span>
+          <span className="sm:hidden">✕</span>
         </button>
 
         {/* Статистика */}
-        <div className="ml-auto text-sm text-gray-600">
+        <div className="ml-auto text-xs md:text-sm text-gray-600">
           <span className={`font-medium ${
             totalSeated === presentStudents.length ? 'text-green-600' :
             totalSeated > 0 ? 'text-amber-600' : 'text-gray-400'
@@ -360,12 +369,12 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
           </span>
           <span className="text-gray-400 mx-1">/</span>
           <span>{presentStudents.length}</span>
-          <span className="text-gray-500 ml-2">({totalDesks} парт)</span>
+          <span className="hidden md:inline text-gray-500 ml-2">({totalDesks} парт)</span>
         </div>
       </div>
 
       {/* Визуализация парт (основной контент) */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-auto p-3 md:p-6 pb-16 md:pb-6">
         {selectedClassroom && desks.length > 0 ? (
           <SeatingGrid classroom={selectedClassroom} desks={desks} students={students} />
         ) : (

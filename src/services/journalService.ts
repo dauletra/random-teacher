@@ -6,6 +6,7 @@ import {
   getDocuments,
   updateDocument,
   deleteDocument,
+  setDocumentWithId,
   where,
 } from '../utils/firestore';
 
@@ -40,34 +41,20 @@ export const journalService = {
   },
 
   async addStudent(journalId: string, studentId: string): Promise<string> {
-    const existing = await getDocuments<JournalStudent>(
-      COLLECTIONS.JOURNAL_STUDENTS,
-      where('journalId', '==', journalId),
-      where('studentId', '==', studentId)
-    );
-
-    if (existing.length > 0) {
-      return existing[0].id;
-    }
-
-    const journalStudentData = {
+    // Use deterministic ID to avoid check-then-create (N+1)
+    // setDoc with this ID is idempotent — no read needed
+    const docId = `${journalId}_${studentId}`;
+    await setDocumentWithId<JournalStudent>(COLLECTIONS.JOURNAL_STUDENTS, docId, {
       journalId,
       studentId,
-    };
-
-    return await createDocument<JournalStudent>(COLLECTIONS.JOURNAL_STUDENTS, journalStudentData);
+    });
+    return docId;
   },
 
   async removeStudent(journalId: string, studentId: string): Promise<void> {
-    const existing = await getDocuments<JournalStudent>(
-      COLLECTIONS.JOURNAL_STUDENTS,
-      where('journalId', '==', journalId),
-      where('studentId', '==', studentId)
-    );
-
-    if (existing.length > 0) {
-      await deleteDocument(COLLECTIONS.JOURNAL_STUDENTS, existing[0].id);
-    }
+    // Deterministic ID — delete directly without querying first
+    const docId = `${journalId}_${studentId}`;
+    await deleteDocument(COLLECTIONS.JOURNAL_STUDENTS, docId);
   },
 
   async getStudentsByJournalId(journalId: string): Promise<string[]> {

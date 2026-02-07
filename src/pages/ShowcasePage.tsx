@@ -69,10 +69,10 @@ export const ShowcasePage = () => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
               <svg
-                className="w-10 h-10"
+                className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0"
                 viewBox="0 0 64 64"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -85,25 +85,25 @@ export const ShowcasePage = () => {
                   fill="white"
                 />
               </svg>
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-base md:text-xl font-bold text-gray-900">
                 Random Teacher
               </span>
             </Link>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               {user ? (
                 <>
                   {isAdmin(user.email) && (
                     <Link
                       to="/admin"
-                      className="text-sm text-gray-600 hover:text-gray-900"
+                      className="text-xs md:text-sm text-gray-600 hover:text-gray-900"
                     >
                       Админ
                     </Link>
                   )}
                   <Link
                     to="/dashboard"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                    className="px-3 md:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs md:text-sm font-medium"
                   >
                     Мои классы
                   </Link>
@@ -111,7 +111,7 @@ export const ShowcasePage = () => {
               ) : (
                 <Link
                   to="/login"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                  className="px-3 md:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs md:text-sm font-medium"
                 >
                   Войти
                 </Link>
@@ -121,12 +121,12 @@ export const ShowcasePage = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <div className="text-center mb-4 md:mb-8">
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-1 md:mb-2">
             Интерактивные инструменты для учителей
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
             Коллекция Claude-артефактов для использования на уроках.
             Симуляторы, игры, тесты и многое другое.
           </p>

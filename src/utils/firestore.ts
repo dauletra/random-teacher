@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -62,6 +63,28 @@ export const createDocument = async <T>(
     createdAt: Timestamp.now(),
   });
   return docRef.id;
+};
+
+// Create or overwrite document with a specific ID (no read needed)
+export const setDocumentWithId = async <T>(
+  collectionName: string,
+  docId: string,
+  data: Omit<T, 'id'>
+): Promise<string> => {
+  const docRef = doc(db, collectionName, docId);
+
+  const cleanData = Object.entries(data).reduce((acc, [key, value]) => {
+    if (value !== undefined) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as Record<string, any>);
+
+  await setDoc(docRef, {
+    ...cleanData,
+    createdAt: Timestamp.now(),
+  });
+  return docId;
 };
 
 // Get document by ID

@@ -18,6 +18,7 @@ import {
   runFirestoreTransaction,
 } from '../utils/firestore';
 import { db } from '../config/firebase';
+import { cache, cacheKeys } from '../utils/cache';
 
 export const lessonService = {
   async getOrCreateTodayLesson(journalId: string): Promise<Lesson> {
@@ -84,6 +85,9 @@ export const lessonService = {
 
   async delete(lessonId: string): Promise<void> {
     await deleteDocument(COLLECTIONS.LESSONS, lessonId);
+    // Invalidate attendance and grades cache for this lesson
+    cache.delete(cacheKeys.attendance(lessonId));
+    cache.delete(cacheKeys.grades(lessonId));
   },
 
   async markAttendance(
@@ -97,25 +101,35 @@ export const lessonService = {
       where('studentId', '==', studentId)
     );
 
+    let id: string;
     if (existing.length > 0) {
       await updateDocument<Attendance>(COLLECTIONS.ATTENDANCE, existing[0].id, {
         isPresent,
       });
-      return existing[0].id;
+      id = existing[0].id;
+    } else {
+      id = await createDocument<Attendance>(COLLECTIONS.ATTENDANCE, {
+        lessonId,
+        studentId,
+        isPresent,
+      });
     }
 
-    return await createDocument<Attendance>(COLLECTIONS.ATTENDANCE, {
-      lessonId,
-      studentId,
-      isPresent,
-    });
+    // Invalidate attendance cache for this lesson
+    cache.delete(cacheKeys.attendance(lessonId));
+    return id;
   },
 
   async getAttendance(lessonId: string): Promise<Attendance[]> {
-    return await getDocuments<Attendance>(
+    const cached = cache.get<Attendance[]>(cacheKeys.attendance(lessonId));
+    if (cached) return cached;
+
+    const result = await getDocuments<Attendance>(
       COLLECTIONS.ATTENDANCE,
       where('lessonId', '==', lessonId)
     );
+    cache.set(cacheKeys.attendance(lessonId), result);
+    return result;
   },
 
   async addGrade(
@@ -124,19 +138,26 @@ export const lessonService = {
     grade: number,
     comment?: string
   ): Promise<string> {
-    return await createDocument<Grade>(COLLECTIONS.GRADES, {
+    const id = await createDocument<Grade>(COLLECTIONS.GRADES, {
       lessonId,
       studentId,
       grade,
       comment,
     });
+    cache.delete(cacheKeys.grades(lessonId));
+    return id;
   },
 
   async getGrades(lessonId: string): Promise<Grade[]> {
-    return await getDocuments<Grade>(
+    const cached = cache.get<Grade[]>(cacheKeys.grades(lessonId));
+    if (cached) return cached;
+
+    const result = await getDocuments<Grade>(
       COLLECTIONS.GRADES,
       where('lessonId', '==', lessonId)
     );
+    cache.set(cacheKeys.grades(lessonId), result);
+    return result;
   },
 
   async updateGrade(
@@ -144,9 +165,11 @@ export const lessonService = {
     data: { grade?: number; comment?: string }
   ): Promise<void> {
     await updateDocument<Grade>(COLLECTIONS.GRADES, gradeId, data);
+    cache.invalidatePattern('grades:');
   },
 
   async deleteGrade(gradeId: string): Promise<void> {
     await deleteDocument(COLLECTIONS.GRADES, gradeId);
+    cache.invalidatePattern('grades:');
   },
 };

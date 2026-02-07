@@ -3,7 +3,8 @@ import { saveToSession, loadFromSession } from '../utils/sessionStorage';
 
 /**
  * Хук для работы с sessionStorage, аналогичный useState
- * Автоматически сохраняет и восстанавливает состояние из sessionStorage
+ * Сохраняет состояние в sessionStorage при размонтировании компонента
+ * и с debounce при изменении (по умолчанию 500ms)
  *
  * @param key - ключ для хранения в sessionStorage
  * @param defaultValue - значение по умолчанию
@@ -13,49 +14,50 @@ import { saveToSession, loadFromSession } from '../utils/sessionStorage';
 export const useSessionState = <T>(
   key: string,
   defaultValue: T,
-  debounceMs: number = 0
+  debounceMs: number = 500
 ): [T, (value: T | ((prev: T) => T)) => void] => {
   // Загружаем начальное значение из sessionStorage или используем defaultValue
   const [state, setState] = useState<T>(() => {
     return loadFromSession(key, defaultValue);
   });
 
+  // Ref для актуального state (для сохранения при unmount без зависимостей)
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  // Ref для ключа
+  const keyRef = useRef(key);
+  keyRef.current = key;
+
   // Ref для debounce таймера
   const debounceTimerRef = useRef<number | null>(null);
 
-  // Функция для сохранения в sessionStorage с debounce
-  const saveState = useCallback((newState: T) => {
+  // Сохранение с debounce при изменении state
+  useEffect(() => {
     if (debounceMs > 0) {
-      // Очищаем предыдущий таймер
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
-
-      // Устанавливаем новый таймер
       debounceTimerRef.current = setTimeout(() => {
-        saveToSession(key, newState);
+        saveToSession(keyRef.current, stateRef.current);
         debounceTimerRef.current = null;
       }, debounceMs);
-    } else {
-      // Сохраняем сразу без debounce
-      saveToSession(key, newState);
     }
-  }, [key, debounceMs]);
+    // НЕ сохраняем синхронно — только через debounce или при unmount
+  }, [state, debounceMs]);
 
-  // Сохраняем при изменении состояния
+  // Cleanup: сохранить финальное состояние при размонтировании
   useEffect(() => {
-    saveState(state);
-
-    // Cleanup: сохраняем финальное состояние при размонтировании
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
-        saveToSession(key, state);
       }
+      // Гарантированно сохраняем при unmount
+      saveToSession(keyRef.current, stateRef.current);
     };
-  }, [state, key, saveState]);
+  }, []); // Пустые зависимости — только при unmount
 
-  // Обёртка для setState, чтобы поддержать функциональные обновления
+  // Обёртка для setState
   const setStateWrapper = useCallback((value: T | ((prev: T) => T)) => {
     setState(value);
   }, []);

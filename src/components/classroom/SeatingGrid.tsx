@@ -28,20 +28,20 @@ export const SeatingGrid: React.FC<SeatingGridProps> = ({ classroom, desks, stud
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 overflow-x-auto">
       {/* Заголовки колонок */}
-      <div className="flex gap-4 mb-4 justify-center">
+      <div className="flex gap-2 md:gap-4 mb-3 md:mb-4 justify-center min-w-max">
         {desksByColumn.map((_, columnIndex) => (
-          <div key={columnIndex} className="flex flex-col items-center">
-            <span className="text-sm font-medium text-gray-700">Колонка {columnIndex + 1}</span>
+          <div key={columnIndex} className="flex flex-col items-center w-28 md:w-36">
+            <span className="text-xs md:text-sm font-medium text-gray-700">Кол. {columnIndex + 1}</span>
           </div>
         ))}
       </div>
 
       {/* Парты по вертикали (сверху вниз) */}
-      <div className="flex gap-4 justify-center">
+      <div className="flex gap-2 md:gap-4 justify-center min-w-max">
         {desksByColumn.map((columnDesks, columnIndex) => (
-          <div key={columnIndex} className="flex flex-col gap-2">
+          <div key={columnIndex} className="flex flex-col gap-1.5 md:gap-2">
             {columnDesks.map((desk) => {
               const studentCount = desk.studentIds.length;
               const isEmpty = studentCount === 0;
@@ -51,7 +51,7 @@ export const SeatingGrid: React.FC<SeatingGridProps> = ({ classroom, desks, stud
                 <div
                   key={desk.position}
                   className={`
-                    w-36 px-3 py-3 rounded-lg border-2 transition-all
+                    w-28 md:w-36 px-2 md:px-3 py-2 md:py-3 rounded-lg border-2 transition-all
                     ${isEmpty
                       ? 'border-gray-200 bg-white'
                       : isDouble
@@ -61,15 +61,15 @@ export const SeatingGrid: React.FC<SeatingGridProps> = ({ classroom, desks, stud
                   `}
                 >
                   <div className="text-center">
-                    <p className="text-xs text-gray-500 mb-1">Парта {desk.position + 1}</p>
+                    <p className="text-[10px] md:text-xs text-gray-500 mb-0.5 md:mb-1">Парта {desk.position + 1}</p>
                     {isEmpty ? (
-                      <p className="text-sm text-gray-400">(пусто)</p>
+                      <p className="text-xs md:text-sm text-gray-400">(пусто)</p>
                     ) : (
-                      <div className="space-y-1">
+                      <div className="space-y-0.5 md:space-y-1">
                         {desk.studentIds.map((studentId, index) => (
                           <p
                             key={studentId}
-                            className={`text-sm font-medium truncate ${
+                            className={`text-xs md:text-sm font-medium truncate ${
                               isDouble ? 'text-amber-900' : 'text-indigo-900'
                             }`}
                             title={getStudentName(studentId)}

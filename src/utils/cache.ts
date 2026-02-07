@@ -78,4 +78,6 @@ export const cacheKeys = {
   journal: (id: string) => `journal:${id}`,
   journals: (classId: string) => `journals:class:${classId}`,
   class: (id: string) => `class:${id}`,
+  attendance: (lessonId: string) => `attendance:${lessonId}`,
+  grades: (lessonId: string) => `grades:${lessonId}`,
 };

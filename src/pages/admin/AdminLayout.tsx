@@ -25,32 +25,33 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <Link to="/" className="text-xl font-bold text-gray-900">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <div className="flex items-center gap-2 md:gap-8 min-w-0">
+              <Link to="/" className="text-base md:text-xl font-bold text-gray-900 flex-shrink-0">
                 Random Teacher
               </Link>
-              <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                Админ-панель
+              <span className="text-xs md:text-sm text-gray-500 bg-gray-100 px-1.5 md:px-2 py-0.5 md:py-1 rounded flex-shrink-0">
+                Админ
               </span>
             </div>
             <Link
               to="/dashboard"
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-xs md:text-sm text-gray-600 hover:text-gray-900 flex-shrink-0 ml-2"
             >
-              Вернуться в приложение
+              <span className="hidden sm:inline">Вернуться в приложение</span>
+              <span className="sm:hidden">Назад</span>
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <nav className="flex gap-4 mb-8 border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <nav className="flex gap-2 md:gap-4 mb-4 md:mb-8 border-b border-gray-200 overflow-x-auto scrollbar-hide">
           {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`pb-3 px-1 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              className={`pb-2 md:pb-3 px-1 text-xs md:text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap flex-shrink-0 ${
                 isActive(item.path, item.exact)
                   ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'

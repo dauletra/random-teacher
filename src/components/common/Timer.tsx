@@ -138,52 +138,52 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
     const isLowTime = timeLeft <= 10 && mode === 'running';
 
     return (
-      <div className={`flex items-center gap-3 px-4 py-2 ${mode === 'running' ? 'bg-indigo-50 border-indigo-300' : 'bg-amber-50 border-amber-300'} border rounded-lg ${className}`}>
-        <svg className={`w-6 h-6 ${mode === 'running' ? 'text-indigo-600' : 'text-amber-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 ${mode === 'running' ? 'bg-indigo-50 border-indigo-300' : 'bg-amber-50 border-amber-300'} border rounded-lg ${className}`}>
+        <svg className={`w-5 h-5 md:w-6 md:h-6 hidden md:block ${mode === 'running' ? 'text-indigo-600' : 'text-amber-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span
-          className={`font-mono font-bold ${mode === 'running' ? 'text-indigo-900' : 'text-amber-900'} ${isLowTime ? 'text-5xl animate-pulse text-red-600' : 'text-4xl'}`}
-          style={{ lineHeight: '1', minWidth: '140px', textAlign: 'center' }}
+          className={`font-mono font-bold ${mode === 'running' ? 'text-indigo-900' : 'text-amber-900'} ${isLowTime ? 'text-3xl md:text-5xl animate-pulse text-red-600' : 'text-2xl md:text-4xl'}`}
+          style={{ lineHeight: '1', minWidth: '80px', textAlign: 'center' }}
         >
           {formatTime(timeLeft)}
         </span>
         {mode === 'running' ? (
           <button
             onClick={handlePause}
-            className="p-2 text-indigo-700 hover:bg-indigo-100 rounded-lg transition-colors"
+            className="p-1.5 md:p-2 text-indigo-700 hover:bg-indigo-100 rounded-lg transition-colors"
             title="Пауза"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6" />
             </svg>
           </button>
         ) : (
           <button
             onClick={handleResume}
-            className="p-2 text-amber-700 hover:bg-amber-100 rounded-lg transition-colors"
+            className="p-1.5 md:p-2 text-amber-700 hover:bg-amber-100 rounded-lg transition-colors"
             title="Продолжить"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             </svg>
           </button>
         )}
         <button
           onClick={handleReset}
-          className="p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1.5 md:p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
           title="Сбросить"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
         <button
           onClick={handleClose}
-          className="p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1.5 md:p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
           title="Закрыть"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
