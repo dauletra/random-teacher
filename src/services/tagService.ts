@@ -1,4 +1,4 @@
-import type { Tag, Artifact } from '../types/artifact.types';
+import type { Tag, ArtifactGroup } from '../types/artifact.types';
 import {
   COLLECTIONS,
   createDocument,
@@ -33,15 +33,15 @@ export const tagService = {
     await deleteDocument(COLLECTIONS.TAGS, tagId);
   },
 
-  // Удаление тега с каскадным удалением из всех артефактов
+  // Удаление тега с каскадным удалением из всех групп артефактов
   async deleteWithCascade(tagId: string): Promise<number> {
-    const artifacts = await getDocuments<Artifact>(COLLECTIONS.ARTIFACTS);
+    const groups = await getDocuments<ArtifactGroup>(COLLECTIONS.ARTIFACT_GROUPS);
 
     let updatedCount = 0;
-    for (const artifact of artifacts) {
-      if (artifact.tags.includes(tagId)) {
-        const newTags = artifact.tags.filter(t => t !== tagId);
-        await updateDocument<Artifact>(COLLECTIONS.ARTIFACTS, artifact.id, { tags: newTags });
+    for (const group of groups) {
+      if (group.tags.includes(tagId)) {
+        const newTags = group.tags.filter(t => t !== tagId);
+        await updateDocument<ArtifactGroup>(COLLECTIONS.ARTIFACT_GROUPS, group.id, { tags: newTags });
         updatedCount++;
       }
     }

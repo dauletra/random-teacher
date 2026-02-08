@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useArtifactGroups } from '../hooks/useArtifactGroups';
 import { useArtifacts } from '../hooks/useArtifacts';
 import { useSubjects } from '../hooks/useSubjects';
 import { useTags } from '../hooks/useTags';
@@ -9,61 +10,92 @@ import { ArtifactCard } from '../components/showcase/ArtifactCard';
 import { ArtifactModal } from '../components/showcase/ArtifactModal';
 import { SubjectFilter } from '../components/showcase/SubjectFilter';
 import { TagFilter } from '../components/showcase/TagFilter';
-import type { Artifact } from '../types/artifact.types';
+import type { Artifact, ArtifactGroup } from '../types/artifact.types';
+
+interface ModalState {
+  group: ArtifactGroup;
+  artifacts: Artifact[];
+  variantIndex: number;
+}
 
 export const ShowcasePage = () => {
   const { user, loading: authLoading } = useAuth();
-  const { artifacts, loading: artifactsLoading } = useArtifacts({ publicOnly: true });
+  const { groups, loading: groupsLoading } = useArtifactGroups({ publicOnly: true });
+  const { artifacts, loading: artifactsLoading } = useArtifacts();
   const { subjects, loading: subjectsLoading } = useSubjects();
   const { tags, loading: tagsLoading } = useTags();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
+  const [modalState, setModalState] = useState<ModalState | null>(null);
 
-  const filteredArtifacts = useMemo(() => {
-    return artifacts.filter((artifact) => {
-      if (selectedSubjectId && artifact.subjectId !== selectedSubjectId) {
+  // Join groups with their artifacts
+  const groupsWithArtifacts = useMemo(() => {
+    const artifactsByGroup = new Map<string, Artifact[]>();
+    for (const a of artifacts) {
+      if (!a.groupId) continue;
+      const list = artifactsByGroup.get(a.groupId) || [];
+      list.push(a);
+      artifactsByGroup.set(a.groupId, list);
+    }
+    // Sort each group's artifacts by order
+    for (const [, list] of artifactsByGroup) {
+      list.sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
+    return { artifactsByGroup };
+  }, [artifacts]);
+
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group) => {
+      // Only show groups that have at least one artifact
+      if (!groupsWithArtifacts.artifactsByGroup.has(group.id)) return false;
+
+      if (selectedSubjectId && group.subjectId !== selectedSubjectId) {
         return false;
       }
 
       if (selectedTagIds.length > 0) {
-        const hasAllTags = selectedTagIds.every((tagId) => artifact.tags.includes(tagId));
+        const hasAllTags = selectedTagIds.every((tagId) => group.tags.includes(tagId));
         if (!hasAllTags) return false;
       }
 
       return true;
     });
-  }, [artifacts, selectedSubjectId, selectedTagIds]);
+  }, [groups, groupsWithArtifacts, selectedSubjectId, selectedTagIds]);
 
   const getSubject = (subjectId: string) => {
     return subjects.find((s) => s.id === subjectId);
   };
 
-  // Группировка артефактов по предметам
-  const artifactsBySubject = useMemo(() => {
-    const grouped = new Map<string, Artifact[]>();
+  // Group by subject for display
+  const groupsBySubject = useMemo(() => {
+    const grouped = new Map<string, ArtifactGroup[]>();
 
-    filteredArtifacts.forEach((artifact) => {
-      const subjectId = artifact.subjectId;
+    filteredGroups.forEach((group) => {
+      const subjectId = group.subjectId;
       if (!grouped.has(subjectId)) {
         grouped.set(subjectId, []);
       }
-      grouped.get(subjectId)!.push(artifact);
+      grouped.get(subjectId)!.push(group);
     });
 
-    // Сортируем предметы по order
     const sortedSubjects = subjects
       .filter((s) => grouped.has(s.id))
       .sort((a, b) => a.order - b.order);
 
     return sortedSubjects.map((subject) => ({
       subject,
-      artifacts: grouped.get(subject.id) || [],
+      groups: grouped.get(subject.id) || [],
     }));
-  }, [filteredArtifacts, subjects]);
+  }, [filteredGroups, subjects]);
 
-  const loading = authLoading || artifactsLoading || subjectsLoading || tagsLoading;
+  const openModal = (group: ArtifactGroup, variantIndex: number) => {
+    const groupArtifacts = groupsWithArtifacts.artifactsByGroup.get(group.id) || [];
+    if (groupArtifacts.length === 0) return;
+    setModalState({ group, artifacts: groupArtifacts, variantIndex });
+  };
+
+  const loading = authLoading || groupsLoading || artifactsLoading || subjectsLoading || tagsLoading;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -156,10 +188,10 @@ export const ShowcasePage = () => {
               />
             </div>
 
-            {filteredArtifacts.length === 0 ? (
+            {filteredGroups.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
                 <p className="text-gray-500 mb-2">
-                  {artifacts.length === 0
+                  {groups.length === 0
                     ? 'Артефактов пока нет'
                     : 'Нет артефактов с выбранными фильтрами'}
                 </p>
@@ -177,7 +209,7 @@ export const ShowcasePage = () => {
               </div>
             ) : (
               <div className="space-y-10">
-                {artifactsBySubject.map(({ subject, artifacts: subjectArtifacts }) => (
+                {groupsBySubject.map(({ subject, groups: subjectGroups }) => (
                   <section key={subject.id}>
                     <div className="flex items-center gap-3 mb-4 pb-2 border-b border-gray-200">
                       <span className="text-2xl">{subject.icon}</span>
@@ -185,17 +217,18 @@ export const ShowcasePage = () => {
                         {subject.name}
                       </h2>
                       <span className="text-sm text-gray-500">
-                        ({subjectArtifacts.length})
+                        ({subjectGroups.length})
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {subjectArtifacts.map((artifact) => (
+                      {subjectGroups.map((group) => (
                         <ArtifactCard
-                          key={artifact.id}
-                          artifact={artifact}
+                          key={group.id}
+                          group={group}
+                          artifacts={groupsWithArtifacts.artifactsByGroup.get(group.id) || []}
                           subject={subject}
                           tags={tags}
-                          onClick={() => setSelectedArtifact(artifact)}
+                          onVariantClick={(index) => openModal(group, index)}
                         />
                       ))}
                     </div>
@@ -207,12 +240,14 @@ export const ShowcasePage = () => {
         )}
       </main>
 
-      {selectedArtifact && (
+      {modalState && (
         <ArtifactModal
-          artifact={selectedArtifact}
-          subject={getSubject(selectedArtifact.subjectId)}
+          group={modalState.group}
+          artifacts={modalState.artifacts}
+          initialVariantIndex={modalState.variantIndex}
+          subject={getSubject(modalState.group.subjectId)}
           tags={tags}
-          onClose={() => setSelectedArtifact(null)}
+          onClose={() => setModalState(null)}
         />
       )}
     </div>

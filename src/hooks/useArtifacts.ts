@@ -5,12 +5,11 @@ import type { Artifact } from '../types/artifact.types';
 import { COLLECTIONS } from '../utils/firestore';
 
 interface UseArtifactsOptions {
-  publicOnly?: boolean;
-  subjectId?: string;
+  groupId?: string;
 }
 
 export const useArtifacts = (options: UseArtifactsOptions = {}) => {
-  const { publicOnly = false, subjectId } = options;
+  const { groupId } = options;
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,12 +17,8 @@ export const useArtifacts = (options: UseArtifactsOptions = {}) => {
   useEffect(() => {
     const constraints = [];
 
-    if (publicOnly) {
-      constraints.push(where('isPublic', '==', true));
-    }
-
-    if (subjectId) {
-      constraints.push(where('subjectId', '==', subjectId));
+    if (groupId) {
+      constraints.push(where('groupId', '==', groupId));
     }
 
     const artifactsQuery = query(
@@ -39,7 +34,6 @@ export const useArtifacts = (options: UseArtifactsOptions = {}) => {
           ...doc.data()
         })) as Artifact[];
 
-        // Sort by order on client side
         artifactsData.sort((a, b) => (a.order || 0) - (b.order || 0));
 
         setArtifacts(artifactsData);
@@ -53,7 +47,7 @@ export const useArtifacts = (options: UseArtifactsOptions = {}) => {
     );
 
     return () => unsubscribe();
-  }, [publicOnly, subjectId]);
+  }, [groupId]);
 
   return { artifacts, loading, error };
 };

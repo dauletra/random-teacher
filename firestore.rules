@@ -67,6 +67,12 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated();
     }
 
+    // Artifact Groups - public read, admin write
+    match /artifactGroups/{groupId} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
+    }
+
     // Artifacts - public read, admin write
     match /artifacts/{artifactId} {
       allow read: if true;

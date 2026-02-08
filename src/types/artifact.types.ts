@@ -8,16 +8,26 @@ export interface Tag {
   updatedAt?: Timestamp;
 }
 
-export interface Artifact {
+export interface ArtifactGroup {
   id: string;
   title: string;
   description: string;
-  embedUrl: string;
   subjectId: string;
   tags: string[]; // tag IDs
   thumbnail?: string;
   order: number;
   isPublic: boolean;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface Artifact {
+  id: string;
+  groupId: string;
+  variantLabel: string;
+  embedUrl: string;
+  description?: string;
+  order: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }

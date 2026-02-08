@@ -1,20 +1,32 @@
 import { useEffect, useState } from 'react';
-import type { Artifact, Subject, Tag } from '../../types/artifact.types';
+import type { Artifact, ArtifactGroup, Subject, Tag } from '../../types/artifact.types';
 import { getEmbedUrl, getViewUrl } from '../../utils/artifactUrl';
 
 interface ArtifactModalProps {
-  artifact: Artifact;
+  group: ArtifactGroup;
+  artifacts: Artifact[];
+  initialVariantIndex?: number;
   subject?: Subject;
   tags: Tag[];
   onClose: () => void;
 }
 
-export const ArtifactModal = ({ artifact, subject, tags, onClose }: ArtifactModalProps) => {
+export const ArtifactModal = ({
+  group,
+  artifacts,
+  initialVariantIndex = 0,
+  subject,
+  tags,
+  onClose,
+}: ArtifactModalProps) => {
+  const [activeIndex, setActiveIndex] = useState(initialVariantIndex);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const embedUrl = getEmbedUrl(artifact.embedUrl);
-  const viewUrl = getViewUrl(artifact.embedUrl);
+  const currentArtifact = artifacts[activeIndex];
+  const embedUrl = currentArtifact ? getEmbedUrl(currentArtifact.embedUrl) : '';
+  const viewUrl = currentArtifact ? getViewUrl(currentArtifact.embedUrl) : '';
+  const hasMultipleVariants = artifacts.length > 1;
 
   const getTagLabel = (tagId: string) => {
     const tag = tags.find((t) => t.id === tagId);
@@ -44,6 +56,13 @@ export const ArtifactModal = ({ artifact, subject, tags, onClose }: ArtifactModa
     setError(true);
   };
 
+  const switchVariant = (index: number) => {
+    if (index === activeIndex) return;
+    setActiveIndex(index);
+    setLoading(true);
+    setError(false);
+  };
+
   const openInNewTab = () => {
     window.open(viewUrl, '_blank');
   };
@@ -56,24 +75,27 @@ export const ArtifactModal = ({ artifact, subject, tags, onClose }: ArtifactModa
       />
 
       <div className="relative bg-white rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {subject && (
-              <span className="text-2xl">{subject.icon}</span>
+              <span className="text-2xl flex-shrink-0">{subject.icon}</span>
             )}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {artifact.title}
+            <div className="min-w-0">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 truncate">
+                {group.title}
               </h2>
-              {artifact.description && (
-                <p className="text-sm text-gray-500">{artifact.description}</p>
+              {(currentArtifact?.description || group.description) && (
+                <p className="text-sm text-gray-500 truncate">
+                  {currentArtifact?.description || group.description}
+                </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
             <div className="hidden sm:flex flex-wrap gap-1">
-              {artifact.tags.map((tagId) => (
+              {group.tags.map((tagId) => (
                 <span
                   key={tagId}
                   className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
@@ -104,6 +126,26 @@ export const ArtifactModal = ({ artifact, subject, tags, onClose }: ArtifactModa
           </div>
         </div>
 
+        {/* Variant tabs */}
+        {hasMultipleVariants && (
+          <div className="flex border-b border-gray-200 px-4 overflow-x-auto scrollbar-hide flex-shrink-0">
+            {artifacts.map((artifact, index) => (
+              <button
+                key={artifact.id}
+                onClick={() => switchVariant(index)}
+                className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                  index === activeIndex
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {artifact.variantLabel}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Content */}
         <div className="flex-1 bg-gray-50 relative">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
@@ -128,15 +170,18 @@ export const ArtifactModal = ({ artifact, subject, tags, onClose }: ArtifactModa
               </button>
             </div>
           ) : (
-            <iframe
-              src={embedUrl}
-              title={artifact.title}
-              className="w-full h-full border-0"
-              allow="clipboard-write"
-              allowFullScreen
-              onLoad={handleIframeLoad}
-              onError={handleIframeError}
-            />
+            currentArtifact && (
+              <iframe
+                key={currentArtifact.id}
+                src={embedUrl}
+                title={`${group.title} - ${currentArtifact.variantLabel}`}
+                className="w-full h-full border-0"
+                allow="clipboard-write"
+                allowFullScreen
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+              />
+            )
           )}
         </div>
       </div>

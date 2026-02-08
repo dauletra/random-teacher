@@ -26,18 +26,10 @@ export const artifactService = {
     );
   },
 
-  async getPublic(): Promise<Artifact[]> {
+  async getByGroupId(groupId: string): Promise<Artifact[]> {
     return await getDocuments<Artifact>(
       COLLECTIONS.ARTIFACTS,
-      where('isPublic', '==', true),
-      orderBy('order', 'asc')
-    );
-  },
-
-  async getBySubject(subjectId: string): Promise<Artifact[]> {
-    return await getDocuments<Artifact>(
-      COLLECTIONS.ARTIFACTS,
-      where('subjectId', '==', subjectId),
+      where('groupId', '==', groupId),
       orderBy('order', 'asc')
     );
   },

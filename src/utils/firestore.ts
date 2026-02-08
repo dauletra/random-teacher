@@ -29,6 +29,7 @@ export const COLLECTIONS = {
   CLASSROOMS: 'classrooms',
   SEATING_ARRANGEMENTS: 'seatingArrangements',
   ARTIFACTS: 'artifacts',
+  ARTIFACT_GROUPS: 'artifactGroups',
   SUBJECTS: 'subjects',
   TAGS: 'tags',
 } as const;
