@@ -40,11 +40,11 @@ export interface RandomizerTabState {
 export interface SeatingTabState {
   selectedClassroomId: string;
   seatingMode: 'single' | 'pairs'; // по одному или по двое
-  desks: Array<{
+  desksMap: Record<string, Array<{
     column: number;
     position: number;
     studentIds: string[];
-  }>;
+  }>>;
 }
 
 /**

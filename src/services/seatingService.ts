@@ -33,18 +33,30 @@ export const seatingService = {
     let hasUnavoidableConflicts = false;
 
     if (mode === 'single') {
-      // Режим "по одному": строго по одному ученику на парту
+      // Режим "по одному": по одному ученику на парту, при нехватке мест — первые парты по двое
       const shuffled = groupingService.shuffle(presentStudents);
-      let studentIndex = 0;
-      for (let pos = 0; pos < maxDesksPerRow && studentIndex < shuffled.length; pos++) {
-        for (let columnIndex = 0; columnIndex < classroom.columns && studentIndex < shuffled.length; columnIndex++) {
+      const totalDesks = allDesks.length;
+      const overflow = Math.max(0, shuffled.length - totalDesks);
+
+      // Упорядоченный список парт: ряд за рядом (передние первые)
+      const orderedDesks: SeatingDesk[] = [];
+      for (let pos = 0; pos < maxDesksPerRow; pos++) {
+        for (let columnIndex = 0; columnIndex < classroom.columns; columnIndex++) {
           if (pos < classroom.desksPerColumn[columnIndex]) {
             const desk = allDesks.find(d => d.column === columnIndex && d.position === pos);
-            if (desk) {
-              desk.studentIds.push(shuffled[studentIndex].id);
-              studentIndex++;
-            }
+            if (desk) orderedDesks.push(desk);
           }
+        }
+      }
+
+      let studentIndex = 0;
+      for (let deskIdx = 0; deskIdx < orderedDesks.length && studentIndex < shuffled.length; deskIdx++) {
+        orderedDesks[deskIdx].studentIds.push(shuffled[studentIndex].id);
+        studentIndex++;
+        // Если парта в зоне overflow — подсаживаем второго
+        if (deskIdx < overflow && studentIndex < shuffled.length) {
+          orderedDesks[deskIdx].studentIds.push(shuffled[studentIndex].id);
+          studentIndex++;
         }
       }
     } else {

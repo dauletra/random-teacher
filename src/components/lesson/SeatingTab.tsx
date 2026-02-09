@@ -37,7 +37,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     {
       selectedClassroomId: '',
       seatingMode: 'pairs',
-      desks: [],
+      desksMap: {},
     }
   );
 
@@ -51,9 +51,13 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     setSavedState(prev => ({ ...prev, seatingMode: mode }));
   };
 
-  const desks = savedState.desks;
+  const desksMap = savedState.desksMap ?? {};
+  const desks = desksMap[selectedClassroomId] ?? [];
   const setDesks = (newDesks: SeatingDesk[]) => {
-    setSavedState(prev => ({ ...prev, desks: newDesks }));
+    setSavedState(prev => ({
+      ...prev,
+      desksMap: { ...(prev.desksMap ?? {}), [selectedClassroomId]: newDesks },
+    }));
   };
 
   // Track if data was already loaded (prevent re-fetch when tab becomes visible)
@@ -73,11 +77,11 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     }
   }, [classrooms, selectedClassroomId]);
 
-  // Обновление парт при изменении выбранного кабинета (только если парты пустые)
+  // Инициализация пустых парт при выборе кабинета (только если ещё нет данных для этого кабинета)
   useEffect(() => {
     if (selectedClassroomId) {
       const classroom = classrooms.find(c => c.id === selectedClassroomId);
-      if (classroom && desks.length === 0) {
+      if (classroom && !desksMap[selectedClassroomId]) {
         const emptyDesks = createEmptyDesks(classroom);
         setDesks(emptyDesks);
       }
@@ -129,13 +133,18 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     const classroom = getSelectedClassroom();
     if (!classroom) return;
 
+    // Подтверждение перерассадки если ученики уже рассажены
+    const alreadySeated = desks.some(d => d.studentIds.length > 0);
+    if (alreadySeated) {
+      if (!window.confirm('Ученики уже рассажены. Рассадить заново?')) return;
+    }
+
     const presentStudents = students.filter(s => attendance.get(s.id) ?? true);
     const totalDesks = desks.length;
-    const maxCapacity = seatingMode === 'single' ? totalDesks : totalDesks * 2;
+    const maxCapacity = totalDesks * 2;
 
     if (presentStudents.length > maxCapacity) {
-      const modeText = seatingMode === 'single' ? '1' : '2';
-      toast.error(`Слишком много учеников! Учеников: ${presentStudents.length}, максимум мест: ${maxCapacity} (${totalDesks} парт × ${modeText})`);
+      toast.error(`Слишком много учеников! Учеников: ${presentStudents.length}, максимум мест: ${maxCapacity} (${totalDesks} парт × 2)`);
       return;
     }
 
@@ -157,6 +166,9 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
       toast.error('Внимание: не удалось избежать всех конфликтов при рассадке', { duration: 4000 });
     } else if (seatingMode === 'pairs' && conflicts.length > 0) {
       toast.success('Рассадка создана с учетом конфликтов');
+    } else if (seatingMode === 'single' && presentStudents.length > totalDesks) {
+      const overflow = presentStudents.length - totalDesks;
+      toast.success(`Рассадка создана. ${overflow} парт с двумя учениками (не хватило мест)`, { duration: 4000 });
     } else {
       toast.success('Рассадка создана');
     }
@@ -197,13 +209,14 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
       const classroomsData = await classroomService.getByTeacherId(user.uid);
       setClassrooms(classroomsData);
 
-      // Если редактируемый кабинет был выбран - обновить парты
-      if (selectedClassroomId === id) {
-        const updatedClassroom = classroomsData.find(c => c.id === id);
-        if (updatedClassroom) {
-          const emptyDesks = createEmptyDesks(updatedClassroom);
-          setDesks(emptyDesks);
-        }
+      // Сбросить кэшированные парты для обновлённого кабинета (схема могла измениться)
+      const updatedClassroom = classroomsData.find(c => c.id === id);
+      if (updatedClassroom) {
+        const emptyDesks = createEmptyDesks(updatedClassroom);
+        setSavedState(prev => ({
+          ...prev,
+          desksMap: { ...(prev.desksMap ?? {}), [id]: emptyDesks },
+        }));
       }
     } catch (error) {
       console.error('Error updating classroom:', error);
@@ -222,15 +235,17 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
       const classroomsData = await classroomService.getByTeacherId(user.uid);
       setClassrooms(classroomsData);
 
-      // Если удаленный кабинет был выбран - выбрать первый доступный или очистить
-      if (selectedClassroomId === id) {
-        if (classroomsData.length > 0) {
-          setSelectedClassroomId(classroomsData[0].id);
-        } else {
-          setSelectedClassroomId('');
-          setDesks([]);
-        }
-      }
+      // Удалить кэш парт удалённого кабинета
+      setSavedState(prev => {
+        const { [id]: _, ...restDesksMap } = prev.desksMap ?? {};
+        return {
+          ...prev,
+          desksMap: restDesksMap,
+          selectedClassroomId: selectedClassroomId === id
+            ? (classroomsData.length > 0 ? classroomsData[0].id : '')
+            : prev.selectedClassroomId,
+        };
+      });
     } catch (error) {
       console.error('Error deleting classroom:', error);
       toast.error('Ошибка удаления кабинета');
