@@ -22,11 +22,11 @@ export const DashboardPage = () => {
 
     try {
       await classService.create(user.uid, name);
-      toast.success('Класс создан!');
+      toast.success('Сынып жасалды!');
       setShowForm(false);
     } catch (error) {
       console.error('Error creating class:', error);
-      toast.error('Ошибка создания класса');
+      toast.error('Сыныпты жасау кезінде қате кетті');
     }
   };
 
@@ -35,11 +35,11 @@ export const DashboardPage = () => {
 
     try {
       await classService.update(editingClass.id, { name });
-      toast.success('Класс обновлен!');
+      toast.success('Сынып жаңарды!');
       setEditingClass(null);
     } catch (error) {
       console.error('Error updating class:', error);
-      toast.error('Ошибка обновления класса');
+      toast.error('Сыныпты жаңарту кезінде қате кетті');
     }
   };
 
@@ -67,20 +67,20 @@ export const DashboardPage = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">
-        Добро пожаловать, {user?.displayName || 'Учитель'}!
+        Қош келдіңіз, {user?.displayName || 'Мұғалім'}!
       </h1>
 
       {/* Create/Edit Form Modal */}
       <Modal
         isOpen={showForm || !!editingClass}
         onClose={handleCancel}
-        title={editingClass ? 'Редактировать класс' : 'Создать класс'}
+        title={editingClass ? 'Сыныпты өңдеу' : 'Сынып жасау'}
       >
         <ClassForm
           onSubmit={editingClass ? handleUpdate : handleCreate}
           onCancel={handleCancel}
           initialData={editingClass || undefined}
-          submitLabel={editingClass ? 'Сохранить' : 'Создать'}
+          submitLabel={editingClass ? 'Сақтау' : 'Жасау'}
         />
       </Modal>
 

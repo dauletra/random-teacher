@@ -63,7 +63,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
   // Track if data was already loaded (prevent re-fetch when tab becomes visible)
   const dataLoadedRef = useRef(false);
 
-  // Загрузка кабинетов учителя
+  // Жүктелуде кабинетов учителя
   useEffect(() => {
     if (!dataLoadedRef.current) {
       loadData();
@@ -98,14 +98,14 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
       const classroomsData = await classroomService.getByTeacherId(user.uid);
       setClassrooms(classroomsData);
 
-      // Выбрать первый доступный кабинет
+      // Таңдау первый доступный кабинет
       if (classroomsData.length > 0) {
         setSelectedClassroomId(classroomsData[0].id);
       }
       dataLoadedRef.current = true;
     } catch (error) {
       console.error('Error loading seating data:', error);
-      toast.error('Ошибка загрузки данных');
+      toast.error('Қате загрузки данных');
     } finally {
       setLoading(false);
     }
@@ -133,10 +133,10 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     const classroom = getSelectedClassroom();
     if (!classroom) return;
 
-    // Подтверждение перерассадки если ученики уже рассажены
+    // Растау перерассадки если ученики уже рассажены
     const alreadySeated = desks.some(d => d.studentIds.length > 0);
     if (alreadySeated) {
-      if (!window.confirm('Ученики уже рассажены. Рассадить заново?')) return;
+      if (!window.confirm('Оқушыи уже рассажены. Рассадить заново?')) return;
     }
 
     const presentStudents = students.filter(s => attendance.get(s.id) ?? true);
@@ -144,12 +144,12 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     const maxCapacity = totalDesks * 2;
 
     if (presentStudents.length > maxCapacity) {
-      toast.error(`Слишком много учеников! Учеников: ${presentStudents.length}, максимум мест: ${maxCapacity} (${totalDesks} парт × 2)`);
+      toast.error(`Слишком много учеников! Оқушыов: ${presentStudents.length}, максимум мест: ${maxCapacity} (${totalDesks} парт × 2)`);
       return;
     }
 
     if (presentStudents.length === 0) {
-      toast.error('Нет присутствующих учеников для рассадки');
+      toast.error('Жоқ присутствующих учеников для рассадки');
       return;
     }
 
@@ -165,19 +165,19 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
     if (seatingMode === 'pairs' && result.hasUnavoidableConflicts) {
       toast.error('Внимание: не удалось избежать всех конфликтов при рассадке', { duration: 4000 });
     } else if (seatingMode === 'pairs' && conflicts.length > 0) {
-      toast.success('Рассадка создана с учетом конфликтов');
+      toast.success('Орналасу жасалдыа с учетом конфликтов');
     } else if (seatingMode === 'single' && presentStudents.length > totalDesks) {
       const overflow = presentStudents.length - totalDesks;
-      toast.success(`Рассадка создана. ${overflow} парт с двумя учениками (не хватило мест)`, { duration: 4000 });
+      toast.success(`Орналасу жасалдыа. ${overflow} парт с двумя учениками (не хватило мест)`, { duration: 4000 });
     } else {
-      toast.success('Рассадка создана');
+      toast.success('Орналасу жасалдыа');
     }
   };
 
   const handleClearSeating = () => {
     const emptyDesks = desks.map(d => ({ ...d, studentIds: [] }));
     setDesks(emptyDesks);
-    toast.success('Рассадка очищена');
+    toast.success('Орналасу очищена');
   };
 
   const handleCreateClassroom = async (name: string, columns: number, desksPerColumn: number[]) => {
@@ -185,31 +185,31 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
 
     try {
       const id = await classroomService.create(user.uid, name, columns, desksPerColumn);
-      toast.success('Кабинет создан');
+      toast.success('Кабинет жасалды');
 
       // Перезагрузить кабинеты
       const classroomsData = await classroomService.getByTeacherId(user.uid);
       setClassrooms(classroomsData);
 
-      // Выбрать новый кабинет
+      // Таңдау новый кабинет
       setSelectedClassroomId(id);
     } catch (error) {
       console.error('Error creating classroom:', error);
-      toast.error('Ошибка создания кабинета');
+      toast.error('Қате жасалдыия кабинета');
     }
   };
 
   const handleUpdateClassroom = async (id: string, name: string, columns: number, desksPerColumn: number[]) => {
     try {
       await classroomService.update(id, { name, columns, desksPerColumn });
-      toast.success('Кабинет обновлен');
+      toast.success('Кабинет жаңарды');
 
       // Перезагрузить кабинеты
       if (!user) return;
       const classroomsData = await classroomService.getByTeacherId(user.uid);
       setClassrooms(classroomsData);
 
-      // Сбросить кэшированные парты для обновлённого кабинета (схема могла измениться)
+      // Ысыру кэшированные парты для обновлённого кабинета (схема могла измениться)
       const updatedClassroom = classroomsData.find(c => c.id === id);
       if (updatedClassroom) {
         const emptyDesks = createEmptyDesks(updatedClassroom);
@@ -220,7 +220,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
       }
     } catch (error) {
       console.error('Error updating classroom:', error);
-      toast.error('Ошибка обновления кабинета');
+      toast.error('Қате жаңардыия кабинета');
     }
   };
 
@@ -229,13 +229,13 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
 
     try {
       await classroomService.delete(id);
-      toast.success('Кабинет удален');
+      toast.success('Кабинет жойылды');
 
       // Перезагрузить кабинеты
       const classroomsData = await classroomService.getByTeacherId(user.uid);
       setClassrooms(classroomsData);
 
-      // Удалить кэш парт удалённого кабинета
+      // Жою кэш парт удалённого кабинета
       setSavedState(prev => {
         const { [id]: _, ...restDesksMap } = prev.desksMap ?? {};
         return {
@@ -248,7 +248,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
       });
     } catch (error) {
       console.error('Error deleting classroom:', error);
-      toast.error('Ошибка удаления кабинета');
+      toast.error('Қате жойылдыия кабинета');
     }
   };
 
@@ -267,7 +267,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
   const totalDesks = desks.length;
   const isEmpty = totalSeated === 0;
 
-  // Нет кабинетов - показать empty state
+  // Жоқ кабинетов - показать empty state
   if (classrooms.length === 0) {
     return (
       <div className="h-full flex flex-col bg-gray-50">
@@ -278,7 +278,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Нет кабинетов</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Жоқ кабинетов</h3>
             <p className="text-gray-600 mb-8">Создайте первый кабинет для начала работы с рассадкой учеников</p>
             <button
               onClick={() => setShowManagementModal(true)}
@@ -287,7 +287,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Создать первый кабинет
+              Жасау первый кабинет
             </button>
           </div>
         </div>
@@ -332,9 +332,9 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
                 ? 'bg-indigo-600 text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
-            title="По одному на парту"
+            title="Әр партаға біреуден"
           >
-            <span className="hidden md:inline">👤 По одному</span>
+            <span className="hidden md:inline">👤 Бір-бірден</span>
             <span className="md:hidden">👤</span>
           </button>
           <button
@@ -344,9 +344,9 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
                 ? 'bg-indigo-600 text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
-            title="По двое на парту"
+            title="Әр партаға екеуден"
           >
-            <span className="hidden md:inline">👥 По двое</span>
+            <span className="hidden md:inline">👥 Екі-екіден</span>
             <span className="md:hidden">👥</span>
           </button>
         </div>
@@ -362,7 +362,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          <span className="hidden sm:inline">Рассадить</span>
+          <span className="hidden sm:inline">Отырғызу</span>
         </button>
 
         <button
@@ -370,7 +370,7 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
           disabled={isEmpty || !selectedClassroom}
           className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          <span className="hidden sm:inline">Очистить</span>
+          <span className="hidden sm:inline">Тазалау</span>
           <span className="sm:hidden">✕</span>
         </button>
 
@@ -388,15 +388,15 @@ export const SeatingTab: React.FC<SeatingTabProps> = ({ journalId, lessonId, cla
         </div>
       </div>
 
-      {/* Визуализация парт (основной контент) */}
+      {/* Визуализация парт (негізгі контент) */}
       <div className="flex-1 overflow-auto p-3 md:p-6 pb-16 md:pb-6">
         {selectedClassroom && desks.length > 0 ? (
           <SeatingGrid classroom={selectedClassroom} desks={desks} students={students} />
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <p className="text-gray-500 text-lg">Нет рассадки</p>
-              <p className="text-gray-400 text-sm mt-2">Нажмите "Рассадить" для создания рассадки</p>
+              <p className="text-gray-500 text-lg">Жоқ рассадки</p>
+              <p className="text-gray-400 text-sm mt-2">Нажмите "Рассадить" для жасалдыия рассадки</p>
             </div>
           </div>
         )}

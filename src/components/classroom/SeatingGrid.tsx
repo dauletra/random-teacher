@@ -9,7 +9,7 @@ interface SeatingGridProps {
 }
 
 export const SeatingGrid: React.FC<SeatingGridProps> = ({ classroom, desks, students }) => {
-  // Создать Map для быстрого поиска студентов по ID
+  // Жасау Map для быстрого поиска студентов по ID
   const studentsMap = new Map(students.map(s => [s.id, s]));
 
   // Группировка парт по колонкам

@@ -125,7 +125,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
       setPickedStudents(newPicked);
     }
 
-    toast.success(`Выбран: ${selected.firstName} ${selected.lastName}`);
+    toast.success(`Таңдалған: ${selected.firstName} ${selected.lastName}`);
   };
 
   const runDoubleAnimation = async () => {
@@ -189,14 +189,14 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
       setPickedStudents(newPicked);
     }
 
-    toast.success(`Выбраны: ${firstSelected.firstName} ${firstSelected.lastName} и ${secondSelected.firstName} ${secondSelected.lastName}`);
+    toast.success(`Таңдалғаны: ${firstSelected.firstName} ${firstSelected.lastName} и ${secondSelected.firstName} ${secondSelected.lastName}`);
   };
 
   const handleRandomPick = () => {
     const available = getAvailableStudents();
 
     if (available.length === 0) {
-      toast.error('Нет доступных учеников для выбора');
+      toast.error('Жоқ доступных учеников для выбора');
       return;
     }
 
@@ -245,7 +245,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 text-lg">Нет присутствующих учеников</p>
+          <p className="text-gray-500 text-lg">Жоқ присутствующих учеников</p>
           <p className="text-gray-400 text-sm mt-2">Отметьте учеников как присутствующих в левом меню</p>
         </div>
       </div>
@@ -312,7 +312,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          {isAnimating ? 'Выбираю...' : 'Выбрать'}
+          {isAnimating ? 'Выбираю...' : 'Таңдау'}
         </button>
 
         <button
@@ -337,7 +337,7 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
           <div className="flex items-center justify-center gap-4 md:gap-8">
             {selectedStudents.length === 1 ? (
               <div className="text-center">
-                <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Выбран ученик:</p>
+                <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Таңдалған ученик:</p>
                 <p className="text-2xl md:text-4xl font-bold text-green-900">
                   {selectedStudents[0].firstName} {selectedStudents[0].lastName[0]}.
                 </p>
@@ -345,14 +345,14 @@ export const RandomizerTab: React.FC<RandomizerTabProps> = ({ journalId, lessonI
             ) : (
               <>
                 <div className="text-center">
-                  <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Ученик 1:</p>
+                  <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Оқушы 1:</p>
                   <p className="text-xl md:text-3xl font-bold text-green-900">
                     {selectedStudents[0].firstName} {selectedStudents[0].lastName[0]}.
                   </p>
                 </div>
                 <div className="text-3xl md:text-5xl font-bold text-green-400">VS</div>
                 <div className="text-center">
-                  <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Ученик 2:</p>
+                  <p className="text-xs md:text-sm text-green-700 font-medium mb-1">Оқушы 2:</p>
                   <p className="text-xl md:text-3xl font-bold text-green-900">
                     {selectedStudents[1].firstName} {selectedStudents[1].lastName[0]}.
                   </p>

@@ -21,7 +21,7 @@ export const classService = {
 
     await createDocument<Journal>(COLLECTIONS.JOURNALS, {
       classId,
-      name: 'Общий журнал',
+      name: 'Жалпы журнал',
       isDefault: true,
     });
 

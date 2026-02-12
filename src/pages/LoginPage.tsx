@@ -41,7 +41,7 @@ export const LoginPage = () => {
               Random Teacher
             </h1>
             <p className="text-gray-600">
-              Рандомайзер для учителя
+              Мұғалімдерге арналған рандомайзар
             </p>
           </div>
 
@@ -51,14 +51,14 @@ export const LoginPage = () => {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Войдите с помощью вашего аккаунта Google
+              Google аккаунтыңыз арқылы кіріңіз
             </p>
           </div>
         </div>
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
-            Управляйте классами, учениками и используйте инструменты рандомизации
+            Сыныпты, оқушыларды басқарыңыз және интерактивті артефакттарды қолданыңыз
           </p>
         </div>
       </div>

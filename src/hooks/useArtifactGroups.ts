@@ -1,22 +1,24 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, type QueryConstraint } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { ArtifactGroup } from '../types/artifact.types';
 import { COLLECTIONS } from '../utils/firestore';
+import { normalizeArtifactGroup } from '../utils/artifactHelpers';
 
 interface UseArtifactGroupsOptions {
   publicOnly?: boolean;
   subjectId?: string;
+  authorId?: string;
 }
 
 export const useArtifactGroups = (options: UseArtifactGroupsOptions = {}) => {
-  const { publicOnly = false, subjectId } = options;
+  const { publicOnly = false, subjectId, authorId } = options;
   const [groups, setGroups] = useState<ArtifactGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const constraints = [];
+    const constraints: QueryConstraint[] = [];
 
     if (publicOnly) {
       constraints.push(where('isPublic', '==', true));
@@ -24,6 +26,10 @@ export const useArtifactGroups = (options: UseArtifactGroupsOptions = {}) => {
 
     if (subjectId) {
       constraints.push(where('subjectId', '==', subjectId));
+    }
+
+    if (authorId) {
+      constraints.push(where('authorId', '==', authorId));
     }
 
     const groupsQuery = query(
@@ -34,10 +40,9 @@ export const useArtifactGroups = (options: UseArtifactGroupsOptions = {}) => {
     const unsubscribe = onSnapshot(
       groupsQuery,
       (snapshot) => {
-        const groupsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as ArtifactGroup[];
+        const groupsData = snapshot.docs.map(doc =>
+          normalizeArtifactGroup({ id: doc.id, ...doc.data() })
+        );
 
         groupsData.sort((a, b) => (a.order || 0) - (b.order || 0));
 
@@ -52,7 +57,7 @@ export const useArtifactGroups = (options: UseArtifactGroupsOptions = {}) => {
     );
 
     return () => unsubscribe();
-  }, [publicOnly, subjectId]);
+  }, [publicOnly, subjectId, authorId]);
 
   return { groups, loading, error };
 };

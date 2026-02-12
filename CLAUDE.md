@@ -8,8 +8,9 @@
 - **Routing**: React Router DOM 7.11.0
 - **Стилизация**: Tailwind CSS 4.1.18
 - **Backend**: Firebase 12.7.0 (Firestore + Auth)
+- **Image Storage**: Cloudinary (бесплатный план: 25 GB)
 - **Build Tool**: Vite 7.2.4
-- **UI**: React Hot Toast для уведомлений
+- **UI**: React Hot Toast для уведомлений, Lucide React для иконок
 
 ## Структура проекта
 ```
@@ -44,7 +45,17 @@ npm run lint
 ```
 
 ## Конфигурация
-Проект использует Firebase для бэкенда. Настройки находятся в `.env` файле.
+Проект использует Firebase для бэкенда и Cloudinary для хранения изображений. Настройки находятся в `.env` файле:
+
+- **Firebase**: см. Firebase Console
+- **Cloudinary**: см. `CLOUDINARY_SETUP.md` для настройки аккаунта
+
+### Загрузка изображений артефактов
+- Поддержка drag & drop, выбор файла, вставка из буфера (Ctrl+V)
+- Автоматический ресайз до 600x400px на клиенте (экономия bandwidth)
+- Cloudinary transformations для оптимизации отображения
+- Lazy loading изображений
+- См. `docs/IMAGE_UPLOAD_GUIDE.md` и `docs/THUMBNAIL_OPTIMIZATION.md`
 
 ## Основные возможности
 

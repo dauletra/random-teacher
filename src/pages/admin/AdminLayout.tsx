@@ -9,9 +9,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/admin', label: 'Артефакты', exact: true },
-    { path: '/admin/subjects', label: 'Предметы' },
-    { path: '/admin/tags', label: 'Теги' },
+    { path: '/admin', label: 'Артефакттар', exact: true },
+    { path: '/admin/subjects', label: 'Пәндер' },
+    { path: '/admin/tags', label: 'Тегтер' },
   ];
 
   const isActive = (path: string, exact?: boolean) => {
@@ -31,15 +31,15 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 Random Teacher
               </Link>
               <span className="text-xs md:text-sm text-gray-500 bg-gray-100 px-1.5 md:px-2 py-0.5 md:py-1 rounded flex-shrink-0">
-                Админ
+                Әкімші
               </span>
             </div>
             <Link
               to="/dashboard"
               className="text-xs md:text-sm text-gray-600 hover:text-gray-900 flex-shrink-0 ml-2"
             >
-              <span className="hidden sm:inline">Вернуться в приложение</span>
-              <span className="sm:hidden">Назад</span>
+              <span className="hidden sm:inline">Қосымшаға қайту</span>
+              <span className="sm:hidden">Артқа</span>
             </Link>
           </div>
         </div>

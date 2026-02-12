@@ -69,7 +69,7 @@ export const ClassSettingsPage = () => {
 
     const [lastName, firstName] = newStudentName.trim().split(' ');
     if (!firstName || !lastName) {
-      toast.error('Введите Фамилию и Имя через пробел');
+      toast.error('Тегі мен атын арасына бос орын тастап жазыңыз');
       return;
     }
 
@@ -81,10 +81,10 @@ export const ClassSettingsPage = () => {
       }
 
       setNewStudentName('');
-      toast.success('Ученик добавлен');
+      toast.success('Оқушы қосылды');
     } catch (error) {
       console.error('Error adding student:', error);
-      toast.error('Ошибка добавления ученика');
+      toast.error('Оқушының қосу кезінде қате кетті');
     }
   };
 
@@ -95,15 +95,15 @@ export const ClassSettingsPage = () => {
       if (journalStudents.includes(studentId)) {
         await journalService.removeStudent(selectedJournalId, studentId);
         setJournalStudents(journalStudents.filter(id => id !== studentId));
-        toast.success('Ученик удален из журнала');
+        toast.success('Оқушы журналдан жойылды');
       } else {
         await journalService.addStudent(selectedJournalId, studentId);
         setJournalStudents([...journalStudents, studentId]);
-        toast.success('Ученик добавлен в журнал');
+        toast.success('Оқушы журналға қосылды');
       }
     } catch (error) {
       console.error('Error toggling student:', error);
-      toast.error('Ошибка');
+      toast.error('Қате');
     }
   };
 
@@ -114,32 +114,32 @@ export const ClassSettingsPage = () => {
       await createJournal(newJournalName, false);
       setNewJournalName('');
       setShowAddJournal(false);
-      toast.success('Журнал создан');
+      toast.success('Журнал жасалды');
     } catch (error) {
       console.error('Error creating journal:', error);
-      toast.error('Ошибка создания журнала');
+      toast.error('Журналды жасау кезінде қате кетті');
     }
   };
 
   const handleDeleteJournal = async (journalId: string, isDefault: boolean) => {
     if (isDefault) {
-      toast.error('Нельзя удалить основной журнал');
+      toast.error('Негізгі журналды жоюға болмайды');
       return;
     }
 
-    if (!window.confirm('Удалить журнал? Это удалит всех учеников из этого журнала.')) {
+    if (!window.confirm('Журналды жою ондағы барлық оқушыны жояды. Жалғастырғыңыз келе ме?')) {
       return;
     }
 
     try {
       await journalService.delete(journalId);
-      toast.success('Журнал удален');
+      toast.success('Журнал жойылды');
       if (selectedJournalId === journalId) {
         setSelectedJournalId(defaultJournal?.id || null);
       }
     } catch (error) {
       console.error('Error deleting journal:', error);
-      toast.error('Ошибка удаления журнала');
+      toast.error('Журналды өшіру кезінде қате кетті');
     }
   };
 
@@ -149,10 +149,10 @@ export const ClassSettingsPage = () => {
     try {
       await classService.update(classId, { name: editedClassName });
       setIsEditingClassName(false);
-      toast.success('Название класса обновлено');
+      toast.success('Сыныптың атауы жаңарды');
     } catch (error) {
       console.error('Error updating class name:', error);
-      toast.error('Ошибка обновления названия');
+      toast.error('Атауын өзгерту кезінде қате кетті');
     }
   };
 
@@ -166,7 +166,7 @@ export const ClassSettingsPage = () => {
 
     const [lastName, firstName] = editedStudentName.trim().split(' ');
     if (!firstName || !lastName) {
-      toast.error('Введите Фамилию и Имя через пробел');
+      toast.error('Тегі мен атын арасына бос орын тастап жазыңыз');
       return;
     }
 
@@ -174,41 +174,41 @@ export const ClassSettingsPage = () => {
       await studentService.update(editingStudentId, { firstName, lastName });
       setEditingStudentId(null);
       setEditedStudentName('');
-      toast.success('Ученик обновлен');
+      toast.success('Оқушы жаңарды');
     } catch (error) {
       console.error('Error updating student:', error);
-      toast.error('Ошибка обновления ученика');
+      toast.error('Оқушыны жаңарту кезінде қате кетті');
     }
   };
 
   const handleDeleteStudent = async (studentId: string) => {
-    if (!window.confirm('Удалить ученика из класса? Это удалит его из всех журналов.')) {
+    if (!window.confirm('Оқушына сыныптан өшіргіңіз келе ме? Бұл оны барлық журналдан өшіреді')) {
       return;
     }
 
     try {
       await studentService.delete(studentId);
-      toast.success('Ученик удален');
+      toast.success('Оқушы жойылды');
     } catch (error) {
       console.error('Error deleting student:', error);
-      toast.error('Ошибка удаления ученика');
+      toast.error('Оқушыны жою кезінде қате кетті');
     }
   };
 
   const handleDeleteClass = async () => {
     if (!classId) return;
 
-    if (!window.confirm('Удалить класс? Это удалит все журналы и учеников этого класса. Это действие необратимо!')) {
+    if (!window.confirm('Сыныпты жойғыңыз келе ме? Бұл сыныптың барлық журналы мен оқушыларын жояды')) {
       return;
     }
 
     try {
       await classService.delete(classId);
-      toast.success('Класс удален');
+      toast.success('Сынып жойылды');
       navigate('/');
     } catch (error) {
       console.error('Error deleting class:', error);
-      toast.error('Ошибка удаления класса');
+      toast.error('Сыныпты жою кезінде қате кетті');
     }
   };
 
@@ -261,7 +261,7 @@ export const ClassSettingsPage = () => {
                 <button
                   onClick={handleUpdateClassName}
                   className="text-green-600 hover:text-green-700 p-2"
-                  title="Сохранить"
+                  title="Сақтау"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -273,7 +273,7 @@ export const ClassSettingsPage = () => {
                     setEditedClassName(classData?.name || '');
                   }}
                   className="text-gray-600 hover:text-gray-700 p-2"
-                  title="Отмена"
+                  title="Болдырмау"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -286,7 +286,7 @@ export const ClassSettingsPage = () => {
                 <button
                   onClick={() => setIsEditingClassName(true)}
                   className="text-gray-400 hover:text-indigo-600 p-2"
-                  title="Изменить название"
+                  title="Атауын өзгерту"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -299,7 +299,7 @@ export const ClassSettingsPage = () => {
             onClick={handleDeleteClass}
             className="ml-4 px-4 py-2 text-red-600 border border-red-600 rounded-md hover:bg-red-50 transition-colors"
           >
-            Удалить класс
+            Сыныпты жою
           </button>
         </div>
       </div>
@@ -315,7 +315,7 @@ export const ClassSettingsPage = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Ученики и Журналы
+            Оқушылар мен Журналдар
           </button>
           <button
             onClick={() => setActiveTab('conflicts')}
@@ -325,7 +325,7 @@ export const ClassSettingsPage = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            ⚠️ Конфликты
+            Конфликттер
           </button>
         </nav>
       </div>
@@ -335,7 +335,7 @@ export const ClassSettingsPage = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Журналы</h2>
+              <h2 className="text-xl font-semibold">Журналдар</h2>
               <button
                 onClick={() => setShowAddJournal(!showAddJournal)}
                 className="text-indigo-600 hover:text-indigo-700"
@@ -359,7 +359,7 @@ export const ClassSettingsPage = () => {
                   onClick={handleCreateJournal}
                   className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700"
                 >
-                  Создать
+                  Жасау
                 </button>
               </div>
             )}
@@ -387,7 +387,7 @@ export const ClassSettingsPage = () => {
                   >
                     <div className="font-medium">{journal.name}</div>
                     {journal.isDefault && (
-                      <div className="text-xs text-gray-500 mt-1">Общий журнал класса</div>
+                      <div className="text-xs text-gray-500 mt-1">Жалпы журнал</div>
                     )}
                   </button>
                   {!journal.isDefault && (
@@ -415,7 +415,7 @@ export const ClassSettingsPage = () => {
 
             {selectedJournal?.isDefault && (
               <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Добавить ученика</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Оқушы қосу</h3>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -429,11 +429,11 @@ export const ClassSettingsPage = () => {
                     onClick={handleAddStudent}
                     className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
                   >
-                    Добавить
+                    Қосу
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Новые ученики автоматически добавляются в общий журнал
+                  Жаңа оқушылар жалпы журналға автоматты түрде қосылады
                 </p>
               </div>
             )}
@@ -443,7 +443,7 @@ export const ClassSettingsPage = () => {
                 // Общий журнал - один список со всеми учениками
                 <>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Список учеников ({students.length})
+                    Оқушылар тізімі ({students.length})
                   </h3>
                   <div className="space-y-2">
                     {students.map((student, index) => (
@@ -466,7 +466,7 @@ export const ClassSettingsPage = () => {
                               <button
                                 onClick={handleUpdateStudent}
                                 className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded"
-                                title="Сохранить"
+                                title="Сақтау"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -496,7 +496,7 @@ export const ClassSettingsPage = () => {
                               <button
                                 onClick={() => handleEditStudent(student.id, student.lastName, student.firstName)}
                                 className="p-1 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded"
-                                title="Редактировать ученика"
+                                title="Оқушыны өңдеу"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -505,7 +505,7 @@ export const ClassSettingsPage = () => {
                               <button
                                 onClick={() => handleDeleteStudent(student.id)}
                                 className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                                title="Удалить ученика из класса"
+                                title="Оқушыны сыныптан жою"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -524,12 +524,12 @@ export const ClassSettingsPage = () => {
                   {/* Ученики в журнале */}
                   <div className="mb-6">
                     <h3 className="text-sm font-medium text-gray-700 mb-2">
-                      Ученики в журнале ({students.filter(s => journalStudents.includes(s.id)).length})
+                      Журналдағы оқушылар ({students.filter(s => journalStudents.includes(s.id)).length})
                     </h3>
                     <div className="space-y-2">
                       {students.filter(s => journalStudents.includes(s.id)).length === 0 ? (
                         <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-md">
-                          Нет учеников в журнале
+                          Журналда оқушылар жоқ
                         </p>
                       ) : (
                         students
@@ -547,7 +547,7 @@ export const ClassSettingsPage = () => {
                                 onClick={() => handleToggleStudentInJournal(student.id)}
                                 className="px-3 py-1 text-sm bg-red-100 text-red-700 hover:bg-red-200 rounded-md"
                               >
-                                Убрать
+                                Алып тастау
                               </button>
                             </div>
                           ))
@@ -558,12 +558,12 @@ export const ClassSettingsPage = () => {
                   {/* Доступные ученики для добавления */}
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 mb-2">
-                      Доступные ученики ({students.filter(s => !journalStudents.includes(s.id)).length})
+                      Оқушылар ({students.filter(s => !journalStudents.includes(s.id)).length})
                     </h3>
                     <div className="space-y-2">
                       {students.filter(s => !journalStudents.includes(s.id)).length === 0 ? (
                         <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-md">
-                          Все ученики добавлены в журнал
+                          Барлық оқушы журналға қосылды
                         </p>
                       ) : (
                         students
@@ -581,7 +581,7 @@ export const ClassSettingsPage = () => {
                                 onClick={() => handleToggleStudentInJournal(student.id)}
                                 className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-md"
                               >
-                                Добавить
+                                Қосу
                               </button>
                             </div>
                           ))

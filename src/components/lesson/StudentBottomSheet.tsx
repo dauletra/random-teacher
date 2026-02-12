@@ -99,7 +99,7 @@ export const StudentBottomSheet: React.FC<StudentBottomSheetProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
-            Ученики ({students.length})
+            Оқушыи ({students.length})
           </h3>
           <button
             onClick={onClose}

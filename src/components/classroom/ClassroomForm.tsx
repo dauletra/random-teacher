@@ -50,13 +50,13 @@ export const ClassroomForm: React.FC<ClassroomFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {classroom ? 'Редактировать кабинет' : 'Создать новый кабинет'}
+          {classroom ? 'Өңдеу кабинет' : 'Жасау новый кабинет'}
         </h3>
 
-        {/* Название */}
+        {/* Атауы */}
         <div className="mb-4">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Название кабинета
+            Атауы кабинета
           </label>
           <input
             id="name"
@@ -136,7 +136,7 @@ export const ClassroomForm: React.FC<ClassroomFormProps> = ({
             ))}
           </div>
           <p className="text-sm text-gray-600 mt-3">
-            Всего: <span className="font-medium">{totalDesks} парт</span>, {totalDesks * 2} мест
+            Барлығыго: <span className="font-medium">{totalDesks} парт</span>, {totalDesks * 2} мест
           </p>
         </div>
       </div>
@@ -148,7 +148,7 @@ export const ClassroomForm: React.FC<ClassroomFormProps> = ({
           disabled={loading || !name.trim()}
           className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? 'Сохранение...' : classroom ? 'Сохранить' : 'Создать кабинет'}
+          {loading ? 'Сохранение...' : classroom ? 'Сақтау' : 'Жасау кабинет'}
         </button>
         <button
           type="button"
@@ -156,7 +156,7 @@ export const ClassroomForm: React.FC<ClassroomFormProps> = ({
           disabled={loading}
           className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors"
         >
-          Отмена
+          Болдырмау
         </button>
       </div>
     </form>

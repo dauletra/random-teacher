@@ -78,7 +78,7 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                 />
               </svg>
               <span className="text-xl font-bold text-gray-900">
-                {isDashboard ? SITE_NAME : 'Все классы'}
+                {isDashboard ? SITE_NAME : 'Барлық сыныптар'}
               </span>
             </Link>
           </div>
@@ -96,7 +96,7 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                   </svg>
                 </button>
                 <span className="text-base font-semibold text-gray-900 truncate">
-                  {mobileTitle || 'Назад'}
+                  {mobileTitle || 'Артқа'}
                 </span>
               </>
             ) : (
@@ -132,12 +132,19 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                   Витрина
                 </Link>
 
+                <Link
+                  to="/my-artifacts"
+                  className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Артефакттарым
+                </Link>
+
                 {isAdmin(user.email) && (
                   <Link
                     to="/admin"
                     className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-50 transition-colors"
                   >
-                    Админ
+                    Әкімші
                   </Link>
                 )}
 
@@ -155,7 +162,7 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                   )}
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {user.displayName || 'Пользователь'}
+                      {user.displayName || 'Қолданушы'}
                     </p>
                     <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
@@ -164,7 +171,7 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                   onClick={logout}
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 rounded-md hover:bg-gray-50 transition-colors"
                 >
-                  Выход
+                  Шығу
                 </button>
               </>
             )}
@@ -188,7 +195,7 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {user.displayName || 'Пользователь'}
+                        {user.displayName || 'Қолданушы'}
                       </p>
                       <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
@@ -197,7 +204,7 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                       to="/dashboard"
                       className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100"
                     >
-                      Мои классы
+                      Менің сыныптарым
                     </Link>
                     <Link
                       to="/"
@@ -205,13 +212,19 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                     >
                       Витрина
                     </Link>
+                    <Link
+                      to="/my-artifacts"
+                      className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100"
+                    >
+                      Артефакттарым
+                    </Link>
 
                     {isAdmin(user.email) && (
                       <Link
                         to="/admin"
                         className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100"
                       >
-                        Админ
+                        Әкімші
                       </Link>
                     )}
 
@@ -220,7 +233,7 @@ export const Header = ({ variant = 'default', mobileTitle }: HeaderProps) => {
                         onClick={logout}
                         className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 active:bg-red-100"
                       >
-                        Выход
+                        Шығу
                       </button>
                     </div>
                   </div>

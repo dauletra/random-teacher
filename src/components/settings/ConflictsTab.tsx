@@ -26,7 +26,7 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
 
   const handleAddConflict = async () => {
     if (!selectedStudent1 || !selectedStudent2) {
-      toast.error('Выберите двух учеников');
+      toast.error('Таңдаңыз двух учеников');
       return;
     }
 
@@ -40,13 +40,13 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
       await conflictService.addConflict(classId, selectedStudent1, selectedStudent2);
       setSelectedStudent1('');
       setSelectedStudent2('');
-      toast.success('Конфликт добавлен');
+      toast.success('Конфликт қосылды');
     } catch (error) {
       console.error('Error adding conflict:', error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error('Ошибка добавления конфликта');
+        toast.error('Қате қосылдыия конфликта');
       }
     } finally {
       setLoading(false);
@@ -56,10 +56,10 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
   const handleRemoveConflict = async (studentId1: string, studentId2: string) => {
     try {
       await conflictService.removeConflict(classId, studentId1, studentId2);
-      toast.success('Конфликт удален');
+      toast.success('Конфликт жойылды');
     } catch (error) {
       console.error('Error removing conflict:', error);
-      toast.error('Ошибка удаления конфликта');
+      toast.error('Қате жойылдыия конфликта');
     }
   };
 
@@ -97,7 +97,7 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
     return visibleConflicts.has(getConflictKey(conflict));
   };
 
-  // Фильтр для второго селектора: исключить выбранного в первом
+  // Сүзгі для второго селектора: исключить выбранного в первом
   const availableStudentsForSecond = students.filter(s => s.id !== selectedStudent1);
 
   return (
@@ -105,13 +105,13 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Конфликты в классе</h2>
         <p className="text-sm text-gray-600">
-          Ученики из конфликтной пары никогда не окажутся в одной группе при автоматическом делении
+          Оқушыи из конфликтной пары никогда не окажутся в одной группе при автоматическом делении
         </p>
       </div>
 
-      {/* Форма добавления конфликта */}
+      {/* Форма қосылдыия конфликта */}
       <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Добавить конфликт</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Қосу конфликт</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <select
             value={selectedStudent1}
@@ -119,7 +119,7 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             disabled={loading}
           >
-            <option value="">Выберите ученика</option>
+            <option value="">Таңдаңыз ученика</option>
             {students.map(student => (
               <option key={student.id} value={student.id}>
                 {student.lastName} {student.firstName}
@@ -133,7 +133,7 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             disabled={loading || !selectedStudent1}
           >
-            <option value="">Выберите ученика</option>
+            <option value="">Таңдаңыз ученика</option>
             {availableStudentsForSecond.map(student => (
               <option key={student.id} value={student.id}>
                 {student.lastName} {student.firstName}
@@ -146,7 +146,7 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
             disabled={loading || !selectedStudent1 || !selectedStudent2}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Добавить
+            Қосу
           </button>
         </div>
       </div>
@@ -162,7 +162,7 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
-            <p className="mt-2 text-gray-500">Нет конфликтов</p>
+            <p className="mt-2 text-gray-500">Жоқ конфликтов</p>
             <p className="text-sm text-gray-400 mt-1">
               Добавьте пары учеников, которые не могут работать вместе
             </p>
@@ -207,7 +207,7 @@ export const ConflictsTab: React.FC<ConflictsTabProps> = ({ classId, students })
                     <button
                       onClick={() => handleRemoveConflict(conflict.studentId1, conflict.studentId2)}
                       className="p-2 text-red-600 hover:text-red-700 hover:bg-red-200 rounded transition-colors"
-                      title="Удалить конфликт"
+                      title="Жою конфликт"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

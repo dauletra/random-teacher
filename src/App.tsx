@@ -14,6 +14,10 @@ import { ArtifactsListPage } from './pages/admin/ArtifactsListPage';
 import { ArtifactEditPage } from './pages/admin/ArtifactEditPage';
 import { SubjectsPage } from './pages/admin/SubjectsPage';
 import { TagsPage } from './pages/admin/TagsPage';
+import { MyArtifactsPage } from './pages/MyArtifactsPage';
+import { MyArtifactEditPage } from './pages/MyArtifactEditPage';
+import { ArtifactDetailPage } from './pages/ArtifactDetailPage';
+import { ArtifactEmbedPage } from './pages/ArtifactEmbedPage';
 
 function App() {
   return (
@@ -45,6 +49,8 @@ function App() {
           {/* Public routes */}
           <Route path="/" element={<ShowcasePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/artifacts/:id" element={<ArtifactDetailPage />} />
+          <Route path="/artifacts/:id/embed" element={<ArtifactEmbedPage />} />
 
           {/* Protected routes */}
           <Route
@@ -83,6 +89,38 @@ function App() {
               <ProtectedRoute>
                 <Layout fullWidth headerVariant="hidden-mobile">
                   <JournalPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* My Artifacts routes */}
+          <Route
+            path="/my-artifacts"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <MyArtifactsPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-artifacts/new"
+            element={
+              <ProtectedRoute>
+                <Layout headerVariant="back" mobileTitle="Жаңа артефакт">
+                  <MyArtifactEditPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-artifacts/:id"
+            element={
+              <ProtectedRoute>
+                <Layout headerVariant="back" mobileTitle="Артефакт">
+                  <MyArtifactEditPage />
                 </Layout>
               </ProtectedRoute>
             }

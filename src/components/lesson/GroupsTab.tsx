@@ -85,19 +85,19 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
     }
 
     if (lastDigit === 1) {
-      return 'группа';
+      return 'топ';
     }
 
     if (lastDigit >= 2 && lastDigit <= 4) {
-      return 'группы';
+      return 'топ ';
     }
 
-    return 'групп';
+    return 'топ';
   };
 
   const handleDivide = async () => {
     if (presentStudents.length === 0) {
-      toast.error('Нет присутствующих учеников');
+      toast.error('Қатысып отырған оқушы жоқ');
       return;
     }
 
@@ -111,7 +111,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
 
     const numGroups = result.groups.length;
 
-    // Этап 1: Создать пустые группы и показать их
+    // Этап 1: Жасау пустые группы и показать их
     const emptyGroups: Group[] = result.groups.map(g => ({
       ...g,
       points: 0
@@ -120,7 +120,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
     setGroups(emptyGroups.map(g => ({ ...g, studentIds: [] })));
     await sleep(300);
 
-    // Этап 2: Анимированное добавление студентов в группы
+    // Этап 2: Анимированное қосылдыие студентов в группы
     const allStudentIds = result.groups.flatMap(g => g.studentIds);
     const tempGroups = emptyGroups.map(g => ({ ...g, studentIds: [] as string[] }));
 
@@ -131,7 +131,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
       const targetGroupIndex = result.groups.findIndex(g => g.studentIds.includes(studentId));
 
       if (targetGroupIndex !== -1) {
-        // Добавить студента в временные группы
+        // Қосу студента в временные группы
         tempGroups[targetGroupIndex].studentIds.push(studentId);
 
         // Обновить состояние для анимации
@@ -147,13 +147,13 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
     setIsDividing(false);
 
     if (result.hasUnavoidableConflicts) {
-      toast.error('⚠️ Внимание: не удалось избежать всех конфликтов. Увеличьте количество групп.', {
+      toast.error('⚠️ Байқаңыз: барлық конфликтті ескеру мүмкін болмады. Топтар санын арттырыңыз.', {
         duration: 5000,
       });
     } else if (conflicts.length > 0) {
-      toast.success(`Создано ${numGroups} ${declensionGroups(numGroups)} с учетом конфликтов ✓`);
+      toast.success(`Конфликттер ескеріліп ${numGroups} ${declensionGroups(numGroups)} құрылды ✓`);
     } else {
-      toast.success(`Создано ${numGroups} ${declensionGroups(numGroups)}`);
+      toast.success(`${numGroups} ${declensionGroups(numGroups)} құрылды`);
     }
   };
 
@@ -171,7 +171,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
     const group = groups[groupIndex];
 
     if (group.studentIds.length === 0) {
-      toast.error('В группе нет учеников');
+      toast.error('Топта оқушы жоқ');
       return;
     }
 
@@ -205,22 +205,22 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
 
     const student = students.find(s => s.id === finalStudentId);
     if (student) {
-      toast.success(`Выбран: ${student.firstName} ${student.lastName.charAt(0)}.`);
+      toast.success(`${student.firstName} ${student.lastName.charAt(0)} таңдалды.`);
     }
   };
 
   const handleReset = () => {
     setGroups([]);
     setSelectedInGroup(new Map());
-    toast.success('Группы сброшены');
+    toast.success('Топтар тазаланды');
   };
 
   if (presentStudents.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 text-lg">Нет присутствующих учеников</p>
-          <p className="text-gray-400 text-sm mt-2">Отметьте учеников как присутствующих в левом меню</p>
+          <p className="text-gray-500 text-lg">Қатысып отырған оқушы жоқ</p>
+          <p className="text-gray-400 text-sm mt-2">Оқушыларды қатысып отыр деп белгілеңіз</p>
         </div>
       </div>
     );
@@ -240,7 +240,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           } ${isDividing ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          По группам
+          Топ саны
         </button>
         <button
           onClick={() => setDivisionMode('bySize')}
@@ -251,7 +251,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           } ${isDividing ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          По размеру
+          Адам саны
         </button>
 
         <div className="hidden md:block h-6 w-px bg-gray-300"></div>
@@ -283,7 +283,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
           disabled={animatingGroupIndex !== null || isDividing}
           className="px-3 md:px-4 py-1.5 bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isDividing ? 'Деление...' : 'Разделить'}
+          {isDividing ? 'Бөліну...' : 'Бөлу'}
         </button>
 
         <div className="hidden md:block h-6 w-px bg-gray-300"></div>
@@ -294,7 +294,7 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
           disabled={animatingGroupIndex !== null || isDividing || groups.length === 0}
           className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Сброс
+          Тазалау
         </button>
       </div>
 
@@ -302,9 +302,9 @@ export const GroupsTab: React.FC<GroupsTabProps> = ({ journalId, lessonId, class
       {groups.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-gray-500 text-lg">Группы не созданы</p>
+            <p className="text-gray-500 text-lg">Топтар құрылмады</p>
             <p className="text-gray-400 text-sm mt-2">
-              Выберите режим деления и нажмите "Разделить"
+              Бөліну режиімін таңдап "Бөлу" кнопкасын басыңыз
             </p>
           </div>
         </div>

@@ -22,11 +22,11 @@ export const ClassesPage = () => {
 
     try {
       await classService.create(user.uid, name);
-      toast.success('Класс создан!');
+      toast.success('Сынып жасалды!');
       setShowForm(false);
     } catch (error) {
       console.error('Error creating class:', error);
-      toast.error('Ошибка создания класса');
+      toast.error('Сыныпты жасау кезінде қате кетті');
     }
   };
 
@@ -35,11 +35,11 @@ export const ClassesPage = () => {
 
     try {
       await classService.update(editingClass.id, { name });
-      toast.success('Класс обновлен!');
+      toast.success('Сынып жаңарды!');
       setEditingClass(null);
     } catch (error) {
       console.error('Error updating class:', error);
-      toast.error('Ошибка обновления класса');
+      toast.error('Сыныпты жаңарту кезінде қате кетті');
     }
   };
 
@@ -68,9 +68,9 @@ export const ClassesPage = () => {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Классы</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Сыныптар</h1>
           <p className="text-gray-600 mt-1">
-            Управление классами и учениками
+            Сыныпты және оқушыларды басқару
           </p>
         </div>
         <button
@@ -90,7 +90,7 @@ export const ClassesPage = () => {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Создать класс
+          Сыныпты жасау
         </button>
       </div>
 
@@ -98,13 +98,13 @@ export const ClassesPage = () => {
       <Modal
         isOpen={showForm || !!editingClass}
         onClose={handleCancel}
-        title={editingClass ? 'Редактировать класс' : 'Создать класс'}
+        title={editingClass ? 'Сыныпты өңдеу' : 'Сыныпты жасау'}
       >
         <ClassForm
           onSubmit={editingClass ? handleUpdate : handleCreate}
           onCancel={handleCancel}
           initialData={editingClass || undefined}
-          submitLabel={editingClass ? 'Сохранить' : 'Создать'}
+          submitLabel={editingClass ? 'Сақтау' : 'Жасау'}
         />
       </Modal>
 

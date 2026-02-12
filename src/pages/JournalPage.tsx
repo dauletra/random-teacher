@@ -148,7 +148,7 @@ export const JournalPage = () => {
   };
 
   const formatDate = (date: Timestamp): string => {
-    return date.toDate().toLocaleDateString('ru-RU', {
+    return date.toDate().toLocaleDateString('kk-KZ', {
       day: '2-digit',
       month: '2-digit',
       year: '2-digit'
@@ -177,7 +177,7 @@ export const JournalPage = () => {
     try {
       // Delete the lesson
       await lessonService.delete(currentLesson.id);
-      toast.success('Урок удален');
+      toast.success('Сабақ жойылды');
 
       // Reload lessons
       const lessons = await lessonService.getByJournalId(journalId);
@@ -200,7 +200,7 @@ export const JournalPage = () => {
       setShowLessonMenu(false);
     } catch (error) {
       console.error('Error deleting lesson:', error);
-      toast.error('Ошибка удаления урока');
+      toast.error('Сабақты жою кезінде қате кетті');
     }
   };
 
@@ -213,10 +213,10 @@ export const JournalPage = () => {
     try {
       await lessonService.markAttendance(currentLesson.id, studentId, newStatus);
       setAttendance(new Map(attendance.set(studentId, newStatus)));
-      toast.success(newStatus ? 'Ученик отмечен присутствующим' : 'Ученик отмечен отсутствующим');
+      toast.success(newStatus ? 'Оқушы сабақта деп белгіленді' : 'Оқушы сабақта жоқ деп белгіленді');
     } catch (error) {
       console.error('Error updating attendance:', error);
-      toast.error('Ошибка обновления посещаемости');
+      toast.error('Сабаққа қатысуды жаңарту мүмкін емес');
     }
   };
 
@@ -275,17 +275,17 @@ export const JournalPage = () => {
           const newInputs = new Map(gradeInputs);
           newInputs.delete(studentId);
           setGradeInputs(newInputs);
-          toast.success('Оценка удалена');
+          toast.success('Баға жойылды');
         } catch (error) {
           console.error('Error deleting grade:', error);
-          toast.error('Ошибка удаления оценки');
+          toast.error('Бағаны жою кезінде қате кетті');
         }
       }
       return;
     }
 
     // If grade is 'н', mark as absent and remove grade
-    if (gradeValue === 'н') {
+    if (gradeValue === 'ж') {
       try {
         // Mark as absent
         await lessonService.markAttendance(currentLesson.id, studentId, false);
@@ -303,17 +303,17 @@ export const JournalPage = () => {
         const newInputs = new Map(gradeInputs);
         newInputs.delete(studentId);
         setGradeInputs(newInputs);
-        toast.success('Ученик отмечен отсутствующим');
+        toast.success('Оқушы жоқ деп белгіленді');
       } catch (error) {
         console.error('Error marking absent:', error);
-        toast.error('Ошибка сохранения');
+        toast.error('Сақтау кезінде қате кетті');
       }
       return;
     }
 
     const grade = parseInt(gradeValue, 10);
     if (isNaN(grade) || grade < 1 || grade > 10) {
-      toast.error('Оценка должна быть от 1 до 10');
+      toast.error('Баға 1 мен 10-ның арасында болу керек');
       return;
     }
 
@@ -336,10 +336,10 @@ export const JournalPage = () => {
         };
         setGrades(new Map(grades.set(studentId, newGrade)));
       }
-      toast.success('Оценка сохранена');
+      toast.success('Баға сақталды');
     } catch (error) {
       console.error('Error saving grade:', error);
-      toast.error('Ошибка сохранения оценки');
+      toast.error('Бағаны сақтау кезінде қате кетті');
     }
   };
 
@@ -354,7 +354,7 @@ export const JournalPage = () => {
   if (!journal) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">Журнал не найден</p>
+        <p className="text-red-600">Журнал табылмады</p>
       </div>
     );
   }
@@ -481,7 +481,7 @@ export const JournalPage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span>Настроить журнал</span>
+            <span>Журналды баптау</span>
           </button>
         </div>
       </div>
@@ -507,7 +507,7 @@ export const JournalPage = () => {
 
                 <div className="text-center">
                   {isToday(currentLesson.date) && (
-                    <p className="text-xs md:text-sm text-indigo-600 font-medium">Сегодня</p>
+                    <p className="text-xs md:text-sm text-indigo-600 font-medium">Бүгін</p>
                   )}
                   <p className="text-lg md:text-2xl font-bold text-gray-900">
                     {formatDate(currentLesson.date)}
@@ -554,7 +554,7 @@ export const JournalPage = () => {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
-                          Удалить урок
+                          Сабақты жою
                         </button>
                       </div>
                     )}
@@ -584,7 +584,7 @@ export const JournalPage = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  Рассадка
+                  Отырғызу
                 </button>
                 <button
                   onClick={() => setActiveTab('group')}
@@ -594,7 +594,7 @@ export const JournalPage = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  Группы
+                  Топтар
                 </button>
                 <button
                   onClick={() => setActiveTab('allGrades')}
@@ -604,7 +604,7 @@ export const JournalPage = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  Все оценки
+                  Барлық бағалар
                 </button>
               </nav>
             </div>
@@ -665,7 +665,7 @@ export const JournalPage = () => {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span>Ученики ({students.length})</span>
+          <span>Оқушылар ({students.length})</span>
           {absentCount > 0 && (
             <span className="bg-red-100 text-red-700 text-xs font-medium px-1.5 py-0.5 rounded-full">
               -{absentCount}
@@ -695,11 +695,11 @@ export const JournalPage = () => {
         isOpen={showDeleteModal}
         onConfirm={handleDeleteLesson}
         onCancel={() => setShowDeleteModal(false)}
-        title="Удалить урок?"
-        message={`Вы уверены, что хотите удалить урок от ${currentLesson ? formatDate(currentLesson.date) : ''}?`}
-        description="Будут удалены все оценки и посещаемость этого урока. Это действие нельзя отменить."
-        confirmLabel="Удалить"
-        cancelLabel="Отмена"
+        title="Сабақты жою керек пе?"
+        message={`${currentLesson ? formatDate(currentLesson.date) : ''} күнгі сабақт жойғыңыз келе ме?`}
+        description="Осы сабақтың барлық бағалары мен қатысулары жойылады. Бұл әрекетті қайта қалпына келтіру мүмкін емес."
+        confirmLabel="Жою"
+        cancelLabel="Кері қайту"
         variant="danger"
       />
     </div>

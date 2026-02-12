@@ -13,7 +13,8 @@ import {
   Timestamp,
   QueryConstraint,
   documentId,
-  runTransaction
+  runTransaction,
+  increment
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -189,4 +190,4 @@ export const runFirestoreTransaction = async <T>(
 };
 
 // Query helpers
-export { where, orderBy, Timestamp, runTransaction };
+export { where, orderBy, Timestamp, runTransaction, increment };

@@ -37,8 +37,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   title,
   message,
   description,
-  confirmLabel = 'Подтвердить',
-  cancelLabel = 'Отмена',
+  confirmLabel = 'Растау',
+  cancelLabel = 'Болдырмау',
   variant = 'danger',
 }) => {
   if (!isOpen) return null;

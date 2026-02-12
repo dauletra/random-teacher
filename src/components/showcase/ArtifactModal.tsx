@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Artifact, ArtifactGroup, Subject, Tag } from '../../types/artifact.types';
 import { getEmbedUrl, getViewUrl } from '../../utils/artifactUrl';
+import { artifactGroupService } from '../../services/artifactGroupService';
+import toast from 'react-hot-toast';
 
 interface ArtifactModalProps {
   group: ArtifactGroup;
@@ -22,6 +24,14 @@ export const ArtifactModal = ({
   const [activeIndex, setActiveIndex] = useState(initialVariantIndex);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const viewCountedRef = useRef(false);
+
+  useEffect(() => {
+    if (!viewCountedRef.current) {
+      viewCountedRef.current = true;
+      artifactGroupService.incrementViewCount(group.id).catch(() => {});
+    }
+  }, [group.id]);
 
   const currentArtifact = artifacts[activeIndex];
   const embedUrl = currentArtifact ? getEmbedUrl(currentArtifact.embedUrl) : '';
@@ -67,6 +77,15 @@ export const ArtifactModal = ({
     window.open(viewUrl, '_blank');
   };
 
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/artifacts/${group.id}`);
+      toast.success('Сілтеме көшірілді');
+    } catch {
+      toast.error('Көшіру сәтсіз аяқталды');
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -90,6 +109,11 @@ export const ArtifactModal = ({
                   {currentArtifact?.description || group.description}
                 </p>
               )}
+              {group.authorName && (
+                <p className="text-xs text-gray-400 truncate">
+                  {group.authorName}
+                </p>
+              )}
             </div>
           </div>
 
@@ -106,9 +130,19 @@ export const ArtifactModal = ({
             </div>
 
             <button
+              onClick={copyLink}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Сілтемені көшіру"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+            </button>
+
+            <button
               onClick={openInNewTab}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Открыть в новой вкладке"
+              title="Жаңа қойындыда ашу"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -166,7 +200,7 @@ export const ArtifactModal = ({
                 onClick={openInNewTab}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                Открыть в новой вкладке
+                Ашу в новой вкладке
               </button>
             </div>
           ) : (

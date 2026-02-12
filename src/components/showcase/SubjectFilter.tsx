@@ -17,7 +17,7 @@ export const SubjectFilter = ({ subjects, selectedId, onChange }: SubjectFilterP
             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
         }`}
       >
-        Все предметы
+        Барлығы предметы
       </button>
 
       {subjects.map((subject) => (

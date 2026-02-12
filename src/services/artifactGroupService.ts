@@ -1,4 +1,5 @@
 import type { ArtifactGroup } from '../types/artifact.types';
+import { updateDoc } from 'firebase/firestore';
 import {
   COLLECTIONS,
   createDocument,
@@ -6,8 +7,10 @@ import {
   getDocuments,
   updateDocument,
   deleteDocument,
+  getDocRef,
   where,
   orderBy,
+  increment,
 } from '../utils/firestore';
 import { artifactService } from './artifactService';
 
@@ -45,6 +48,23 @@ export const artifactGroupService = {
 
   async update(groupId: string, data: Partial<Omit<ArtifactGroup, 'id' | 'createdAt'>>): Promise<void> {
     await updateDocument<ArtifactGroup>(COLLECTIONS.ARTIFACT_GROUPS, groupId, data);
+  },
+
+  async getByAuthor(authorId: string): Promise<ArtifactGroup[]> {
+    return await getDocuments<ArtifactGroup>(
+      COLLECTIONS.ARTIFACT_GROUPS,
+      where('authorId', '==', authorId),
+      orderBy('createdAt', 'desc')
+    );
+  },
+
+  async incrementViewCount(groupId: string): Promise<void> {
+    const docRef = getDocRef(COLLECTIONS.ARTIFACT_GROUPS, groupId);
+    await updateDoc(docRef, { viewCount: increment(1) });
+  },
+
+  async setFeatured(groupId: string, isFeatured: boolean): Promise<void> {
+    await updateDocument<ArtifactGroup>(COLLECTIONS.ARTIFACT_GROUPS, groupId, { isFeatured });
   },
 
   async delete(groupId: string): Promise<void> {

@@ -115,7 +115,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
       setLoadedCount(newCount);
     } catch (error) {
       console.error('Error loading more grades:', error);
-      toast.error('Ошибка загрузки данных');
+      toast.error('Қате загрузки данных');
     } finally {
       setLoadingMore(false);
     }
@@ -128,7 +128,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
   };
 
   const formatMonthYear = (date: Date): string => {
-    return date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString('kk-KZ', { month: 'long', year: 'numeric' });
   };
 
   const getMonthGroups = (): MonthGroup[] => {
@@ -231,7 +231,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
             grades: newGrades
           };
           setLessonsData(newLessonsData);
-          toast.success('Оценка удалена');
+          toast.success('Баға жойылдыа');
         }
       } else if (editValue === 'н') {
         // Mark as absent and remove grade
@@ -254,11 +254,11 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
           grades: newGrades
         };
         setLessonsData(newLessonsData);
-        toast.success('Ученик отмечен отсутствующим');
+        toast.success('Оқушы отмечен отсутствующим');
       } else {
         const grade = parseInt(editValue, 10);
         if (isNaN(grade) || grade < 1 || grade > 10) {
-          toast.error('Оценка должна быть от 1 до 10');
+          toast.error('Баға должна быть от 1 до 10');
           setEditingCell(null);
           setEditValue('');
           return;
@@ -283,7 +283,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
             grades: newGrades
           };
           setLessonsData(newLessonsData);
-          toast.success('Оценка обновлена');
+          toast.success('Баға жаңардыа');
         } else {
           // Add new grade
           const gradeId = await lessonService.addGrade(lessonId, studentId, grade);
@@ -306,12 +306,12 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
             grades: newGrades
           };
           setLessonsData(newLessonsData);
-          toast.success('Оценка добавлена');
+          toast.success('Баға қосылдыа');
         }
       }
     } catch (error) {
       console.error('Error saving grade:', error);
-      toast.error('Ошибка сохранения оценки');
+      toast.error('Қате сохранения оценки');
     }
 
     setEditingCell(null);
@@ -370,7 +370,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
   if (lessonsData.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600">Нет уроков для отображения</p>
+        <p className="text-gray-600">Жоқ уроков для отображения</p>
       </div>
     );
   }
@@ -378,7 +378,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-3 md:p-4 border-b border-gray-200">
-        <h3 className="text-base md:text-lg font-semibold text-gray-900">Все оценки</h3>
+        <h3 className="text-base md:text-lg font-semibold text-gray-900">Барлығы оценки</h3>
         <p className="text-xs md:text-sm text-gray-600 mt-1">
           Показано уроков: {lessonsData.length} из {allLessons.length}
         </p>
@@ -395,7 +395,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
             {loadingMore ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
-                Загрузка...
+                Жүктелуде...
               </span>
             ) : (
               `Загрузить ещё ${Math.min(LESSONS_PER_PAGE, allLessons.length - loadedCount)} уроков`
@@ -413,7 +413,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
                 className="sticky left-0 bg-white z-30 border-r-2 border-b border-gray-300 px-2 md:px-4 py-2 w-28 md:w-48"
                 rowSpan={2}
               >
-                <div className="text-left text-xs md:text-sm font-semibold text-gray-900">Ученик</div>
+                <div className="text-left text-xs md:text-sm font-semibold text-gray-900">Оқушы</div>
               </th>
               {monthGroups.map((group, idx) => (
                 <th
@@ -504,7 +504,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({ journalId, students }) => 
           </div>
           <div className="flex items-center gap-1 md:gap-2">
             <div className="w-4 h-4 md:w-6 md:h-6 bg-gray-50 border border-gray-200 rounded"></div>
-            <span className="text-gray-600">Нет оценки</span>
+            <span className="text-gray-600">Жоқ оценки</span>
           </div>
         </div>
       </div>

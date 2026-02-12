@@ -12,7 +12,7 @@ export const ClassForm = ({
   onSubmit,
   onCancel,
   initialData,
-  submitLabel = 'Создать',
+  submitLabel = 'Жасау',
 }: ClassFormProps) => {
   const [name, setName] = useState(initialData?.name || '');
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,7 @@ export const ClassForm = ({
           htmlFor="class-name"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Название класса
+          Атауы класса
         </label>
         <input
           id="class-name"
@@ -53,7 +53,7 @@ export const ClassForm = ({
           disabled={loading}
         />
         <p className="mt-1 text-xs text-gray-500">
-          Введите номер и букву класса
+          Енгізіңіз номер и букву класса
         </p>
       </div>
 
@@ -71,7 +71,7 @@ export const ClassForm = ({
           disabled={loading}
           className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors"
         >
-          Отмена
+          Болдырмау
         </button>
       </div>
     </form>

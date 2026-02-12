@@ -17,6 +17,12 @@ export interface ArtifactGroup {
   thumbnail?: string;
   order: number;
   isPublic: boolean;
+  // Marketplace fields (optional — normalizeArtifactGroup fills defaults for old docs)
+  authorId?: string;
+  authorName?: string;
+  authorPhotoURL?: string;
+  isFeatured?: boolean;
+  viewCount?: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }

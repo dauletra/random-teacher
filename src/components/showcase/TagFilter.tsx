@@ -40,7 +40,7 @@ export const TagFilter = ({ tags, selectedTagIds, onChange }: TagFilterProps) =>
           onClick={() => onChange([])}
           className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700"
         >
-          Сбросить
+          Ысыру
         </button>
       )}
     </div>

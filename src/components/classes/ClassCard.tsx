@@ -27,13 +27,13 @@ export const ClassCard = ({ class: classData, journals }: ClassCardProps) => {
           <div>
             <h3 className="text-2xl font-bold text-gray-900">{classData.name}</h3>
             <p className="text-sm text-gray-500 mt-1">
-              Создан: {classData.createdAt?.toDate?.().toLocaleDateString('ru-RU') || 'Дата неизвестна'}
+              Жасалды: {classData.createdAt?.toDate?.().toLocaleDateString('kk-KZ') || 'Күні белгісіз'}
             </p>
           </div>
           <button
             onClick={handleSettings}
             className="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-gray-100"
-            title="Настройки класса"
+            title="Сынып баптаулары"
           >
             <svg
               className="w-5 h-5"
@@ -58,7 +58,7 @@ export const ClassCard = ({ class: classData, journals }: ClassCardProps) => {
         </div>
 
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Доступные журналы:</p>
+          <p className="text-sm font-medium text-gray-700 mb-2">Қолжетімді журналдар:</p>
           {journals.length > 0 ? (
             <div className="space-y-2">
               {journals
@@ -76,13 +76,13 @@ export const ClassCard = ({ class: classData, journals }: ClassCardProps) => {
                 >
                   <span className="font-medium text-gray-900">{journal.name}</span>
                   {journal.isDefault && (
-                    <span className="ml-2 text-xs text-gray-500">(основной)</span>
+                    <span className="ml-2 text-xs text-gray-500">(негізгі)</span>
                   )}
                 </button>
               ))}
             </div>
           ) : (
-            <div className="text-sm text-gray-500">Журналов нет</div>
+            <div className="text-sm text-gray-500">Журналдар жоқ</div>
           )}
         </div>
       </div>

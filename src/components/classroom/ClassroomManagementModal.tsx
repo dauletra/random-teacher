@@ -52,7 +52,7 @@ export const ClassroomManagementModal: React.FC<ClassroomManagementModalProps> =
         {/* Заголовок */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">
-            {mode === 'list' ? 'Управление кабинетами' : mode === 'create' ? 'Создать кабинет' : 'Редактировать кабинет'}
+            {mode === 'list' ? 'Управление кабинетами' : mode === 'create' ? 'Жасау кабинет' : 'Өңдеу кабинет'}
           </h2>
           <button
             onClick={onClose}
@@ -88,17 +88,17 @@ export const ClassroomManagementModal: React.FC<ClassroomManagementModalProps> =
                           onClick={() => handleEdit(classroom)}
                           className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
                         >
-                          ✏️ Редактировать
+                          ✏️ Өңдеу
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm(`Удалить кабинет "${classroom.name}"?`)) {
+                            if (confirm(`Жою кабинет "${classroom.name}"?`)) {
                               handleDelete(classroom.id);
                             }
                           }}
                           className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
                         >
-                          🗑️ Удалить
+                          🗑️ Жою
                         </button>
                       </div>
                     </div>
@@ -106,11 +106,11 @@ export const ClassroomManagementModal: React.FC<ClassroomManagementModalProps> =
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 mb-4">Нет созданных кабинетов</p>
+                  <p className="text-gray-500 mb-4">Жоқ жасалдыных кабинетов</p>
                 </div>
               )}
 
-              {/* Кнопка создания */}
+              {/* Кнопка жасалдыия */}
               <button
                 onClick={() => setMode('create')}
                 className="w-full px-4 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
@@ -118,7 +118,7 @@ export const ClassroomManagementModal: React.FC<ClassroomManagementModalProps> =
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Создать новый кабинет
+                Жасау новый кабинет
               </button>
             </div>
           ) : (
@@ -137,7 +137,7 @@ export const ClassroomManagementModal: React.FC<ClassroomManagementModalProps> =
               onClick={onClose}
               className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
-              Закрыть
+              Жабу
             </button>
           </div>
         )}

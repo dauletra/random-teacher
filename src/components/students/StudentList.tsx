@@ -28,7 +28,7 @@ export const StudentList = ({ students, onEdit, onDelete }: StudentListProps) =>
           </svg>
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Нет учеников
+          Жоқ учеников
         </h3>
         <p className="text-gray-600">
           Добавьте учеников в этот класс

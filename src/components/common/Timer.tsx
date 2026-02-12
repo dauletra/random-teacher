@@ -23,7 +23,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
         setTimeLeft(prev => {
           if (prev <= 1) {
             setMode('completed');
-            toast.success('⏰ Время вышло!', { duration: 5000 });
+            toast.success('⏰ Уақыт вышло!', { duration: 5000 });
             if (intervalRef.current) clearInterval(intervalRef.current);
             return 0;
           }
@@ -123,7 +123,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
         <button
           onClick={handleClose}
           className="text-gray-400 hover:text-gray-600 transition-colors"
-          title="Закрыть"
+          title="Жабу"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -162,7 +162,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
           <button
             onClick={handleResume}
             className="p-1.5 md:p-2 text-amber-700 hover:bg-amber-100 rounded-lg transition-colors"
-            title="Продолжить"
+            title="Жалғастыру"
           >
             <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -172,7 +172,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
         <button
           onClick={handleReset}
           className="p-1.5 md:p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
-          title="Сбросить"
+          title="Ысыру"
         >
           <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -181,7 +181,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
         <button
           onClick={handleClose}
           className="p-1.5 md:p-2 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
-          title="Закрыть"
+          title="Жабу"
         >
           <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -198,7 +198,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
         <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span className="text-sm font-medium text-green-900">Время вышло!</span>
+        <span className="text-sm font-medium text-green-900">Уақыт вышло!</span>
         <button
           onClick={handleReset}
           className="px-2 py-0.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
@@ -208,7 +208,7 @@ export const Timer: React.FC<TimerProps> = ({ className = '', onModeChange }) =>
         <button
           onClick={handleClose}
           className="text-gray-400 hover:text-gray-600 transition-colors"
-          title="Закрыть"
+          title="Жабу"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -8,7 +8,7 @@ interface StudentCardProps {
 
 export const StudentCard = ({ student, onEdit, onDelete }: StudentCardProps) => {
   const handleDelete = () => {
-    if (window.confirm(`Удалить ученика "${student.firstName} ${student.lastName}"?`)) {
+    if (window.confirm(`Жою ученика "${student.firstName} ${student.lastName}"?`)) {
       onDelete(student.id);
     }
   };
@@ -28,7 +28,7 @@ export const StudentCard = ({ student, onEdit, onDelete }: StudentCardProps) => 
           onClick={() => onEdit(student)}
           className="flex-1 px-3 py-1.5 text-sm text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
         >
-          Изменить
+          Өзгерту
         </button>
         <button
           onClick={handleDelete}
