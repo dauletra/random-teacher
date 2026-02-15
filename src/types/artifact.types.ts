@@ -23,6 +23,28 @@ export interface ArtifactGroup {
   authorPhotoURL?: string;
   isFeatured?: boolean;
   viewCount?: number;
+  // Physics showcase fields
+  grade?: number[];    // e.g. [7, 8, 9]
+  modeId?: string;     // ID from modes collection
+  topicId?: string;    // ID from topics collection
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface Mode {
+  id: string;
+  label: string;
+  icon: string;
+  color: string;    // Tailwind class e.g. "bg-green-100 text-green-700"
+  order: number;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface Topic {
+  id: string;
+  label: string;
+  order: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }

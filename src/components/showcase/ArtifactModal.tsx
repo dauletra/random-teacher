@@ -109,11 +109,6 @@ export const ArtifactModal = ({
                   {currentArtifact?.description || group.description}
                 </p>
               )}
-              {group.authorName && (
-                <p className="text-xs text-gray-400 truncate">
-                  {group.authorName}
-                </p>
-              )}
             </div>
           </div>
 

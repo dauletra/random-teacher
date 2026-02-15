@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubjects } from '../../hooks/useSubjects';
 import { useTags } from '../../hooks/useTags';
+import { useModes } from '../../hooks/useModes';
+import { useTopics } from '../../hooks/useTopics';
+import { GRADES } from '../../config/physicsConstants';
 import { artifactGroupService } from '../../services/artifactGroupService';
 import { artifactService } from '../../services/artifactService';
 import { ImageUploader } from './ImageUploader';
@@ -40,6 +43,8 @@ export const ArtifactEditForm = ({
   const navigate = useNavigate();
   const { subjects, loading: subjectsLoading } = useSubjects();
   const { tags, loading: tagsLoading } = useTags();
+  const { modes, loading: modesLoading } = useModes();
+  const { topics, loading: topicsLoading } = useTopics();
   const isNew = !initialGroupId || initialGroupId === 'new';
 
   const [loading, setLoading] = useState(!isNew);
@@ -54,6 +59,9 @@ export const ArtifactEditForm = ({
     order: 0,
     isPublic: true,
     isFeatured: false,
+    grade: [] as number[],
+    modeId: '',
+    topicId: '',
   });
   const [variants, setVariants] = useState<VariantFormData[]>([
     { variantLabel: '', artifactUrl: '', description: '', order: 0 },
@@ -88,6 +96,9 @@ export const ArtifactEditForm = ({
           order: group.order,
           isPublic: group.isPublic,
           isFeatured: group.isFeatured ?? false,
+          grade: group.grade || [],
+          modeId: group.modeId || '',
+          topicId: group.topicId || '',
         });
 
         const artifacts = await artifactService.getByGroupId(groupId);
@@ -155,6 +166,9 @@ export const ArtifactEditForm = ({
         thumbnail: formData.thumbnail.trim() || undefined,
         order: mode === 'admin' ? formData.order : 0,
         isPublic: mode === 'admin' ? formData.isPublic : true,
+        grade: formData.grade.length > 0 ? formData.grade : undefined,
+        modeId: formData.modeId || undefined,
+        topicId: formData.topicId || undefined,
       };
 
       if (isNew) {
@@ -250,7 +264,7 @@ export const ArtifactEditForm = ({
     );
   };
 
-  if (loading || subjectsLoading || tagsLoading) {
+  if (loading || subjectsLoading || tagsLoading || modesLoading || topicsLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -346,6 +360,65 @@ export const ArtifactEditForm = ({
               ))}
             </div>
           )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Сынып</label>
+          <div className="flex flex-wrap gap-2">
+            {GRADES.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    grade: prev.grade.includes(g)
+                      ? prev.grade.filter((v) => v !== g)
+                      : [...prev.grade, g].sort(),
+                  }));
+                }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  formData.grade.includes(g)
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {g}-сынып
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Режим</label>
+          <select
+            value={formData.modeId}
+            onChange={(e) => setFormData((prev) => ({ ...prev, modeId: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="">Таңдаңыз</option>
+            {modes.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.icon} {m.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Тақырып</label>
+          <select
+            value={formData.topicId}
+            onChange={(e) => setFormData((prev) => ({ ...prev, topicId: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="">Таңдаңыз</option>
+            {topics.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

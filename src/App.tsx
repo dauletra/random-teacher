@@ -14,6 +14,8 @@ import { ArtifactsListPage } from './pages/admin/ArtifactsListPage';
 import { ArtifactEditPage } from './pages/admin/ArtifactEditPage';
 import { SubjectsPage } from './pages/admin/SubjectsPage';
 import { TagsPage } from './pages/admin/TagsPage';
+import { ModesPage } from './pages/admin/ModesPage';
+import { TopicsPage } from './pages/admin/TopicsPage';
 import { MyArtifactsPage } from './pages/MyArtifactsPage';
 import { MyArtifactEditPage } from './pages/MyArtifactEditPage';
 import { ArtifactDetailPage } from './pages/ArtifactDetailPage';
@@ -156,6 +158,22 @@ function App() {
             element={
               <AdminRoute>
                 <TagsPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/modes"
+            element={
+              <AdminRoute>
+                <ModesPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/topics"
+            element={
+              <AdminRoute>
+                <TopicsPage />
               </AdminRoute>
             }
           />

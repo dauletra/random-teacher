@@ -12,6 +12,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: '/admin', label: 'Артефакттар', exact: true },
     { path: '/admin/subjects', label: 'Пәндер' },
     { path: '/admin/tags', label: 'Тегтер' },
+    { path: '/admin/modes', label: 'Режимдер' },
+    { path: '/admin/topics', label: 'Тақырыптар' },
   ];
 
   const isActive = (path: string, exact?: boolean) => {

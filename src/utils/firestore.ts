@@ -33,6 +33,8 @@ export const COLLECTIONS = {
   ARTIFACT_GROUPS: 'artifactGroups',
   SUBJECTS: 'subjects',
   TAGS: 'tags',
+  MODES: 'modes',
+  TOPICS: 'topics',
 } as const;
 
 // Get collection reference

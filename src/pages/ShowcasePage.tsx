@@ -1,17 +1,21 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useArtifactGroups } from '../hooks/useArtifactGroups';
 import { useArtifacts } from '../hooks/useArtifacts';
-import { useSubjects } from '../hooks/useSubjects';
-import { useTags } from '../hooks/useTags';
-import { isAdmin } from '../config/adminEmails';
+import { useModes } from '../hooks/useModes';
+import { useTopics } from '../hooks/useTopics';
 import { ArtifactCard } from '../components/showcase/ArtifactCard';
 import { ArtifactModal } from '../components/showcase/ArtifactModal';
-import { SubjectFilter } from '../components/showcase/SubjectFilter';
-import { TagFilter } from '../components/showcase/TagFilter';
-import { Search, Plus, ChevronLeft, ChevronRight, Star, Users } from 'lucide-react';
+import { HeroCarousel } from '../components/showcase/HeroCarousel';
+import { GradeFilter } from '../components/showcase/GradeFilter';
+import { CategoryRow } from '../components/showcase/CategoryRow';
+import { ModeFilter } from '../components/showcase/ModeFilter';
+import { TopicFilterNew } from '../components/showcase/TopicFilterNew';
+import { NEW_ARTIFACT_THRESHOLD_MS } from '../config/physicsConstants';
+import { Search } from 'lucide-react';
 import type { Artifact, ArtifactGroup } from '../types/artifact.types';
+import { useTags } from '../hooks/useTags';
 
 interface ModalState {
   group: ArtifactGroup;
@@ -20,116 +24,125 @@ interface ModalState {
 }
 
 export const ShowcasePage = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { groups, loading: groupsLoading } = useArtifactGroups({ publicOnly: true });
   const { artifacts, loading: artifactsLoading } = useArtifacts();
-  const { subjects, loading: subjectsLoading } = useSubjects();
-  const { tags, loading: tagsLoading } = useTags();
+  const { modes, loading: modesLoading } = useModes();
+  const { topics, loading: topicsLoading } = useTopics();
+  const { tags } = useTags();
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
+  const [selectedModeId, setSelectedModeId] = useState<string | null>(null);
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'newest' | 'popular'>('newest');
   const [modalState, setModalState] = useState<ModalState | null>(null);
 
+  const catalogRef = useRef<HTMLDivElement>(null);
+
   // Join groups with their artifacts
-  const groupsWithArtifacts = useMemo(() => {
-    const artifactsByGroup = new Map<string, Artifact[]>();
+  const artifactsByGroup = useMemo(() => {
+    const map = new Map<string, Artifact[]>();
     for (const a of artifacts) {
       if (!a.groupId) continue;
-      const list = artifactsByGroup.get(a.groupId) || [];
+      const list = map.get(a.groupId) || [];
       list.push(a);
-      artifactsByGroup.set(a.groupId, list);
+      map.set(a.groupId, list);
     }
-    for (const [, list] of artifactsByGroup) {
+    for (const [, list] of map) {
       list.sort((a, b) => (a.order || 0) - (b.order || 0));
     }
-    return { artifactsByGroup };
+    return map;
   }, [artifacts]);
 
-  // Base filter (subject + tags + has artifacts + search)
-  const filteredGroups = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return groups.filter((group) => {
-      if (!groupsWithArtifacts.artifactsByGroup.has(group.id)) return false;
-      if (selectedSubjectId && group.subjectId !== selectedSubjectId) return false;
-      if (selectedTagIds.length > 0) {
-        const hasAllTags = selectedTagIds.every((tagId) => group.tags.includes(tagId));
-        if (!hasAllTags) return false;
+  // Groups that have artifacts
+  const groupsWithArtifacts = useMemo(
+    () => groups.filter((g) => artifactsByGroup.has(g.id)),
+    [groups, artifactsByGroup]
+  );
+
+  // Grade-filtered groups (applies to everything)
+  const gradeFiltered = useMemo(() => {
+    if (!selectedGrade) return groupsWithArtifacts;
+    return groupsWithArtifacts.filter(
+      (g) => g.grade && g.grade.includes(selectedGrade)
+    );
+  }, [groupsWithArtifacts, selectedGrade]);
+
+  // Mode map for quick lookup
+  const modeMap = useMemo(() => {
+    const map = new Map<string, (typeof modes)[0]>();
+    for (const m of modes) map.set(m.id, m);
+    return map;
+  }, [modes]);
+
+  // Netflix-style category rows (dynamic from modes)
+  const categoryRows = useMemo(() => {
+    const rows: { key: string; title: string; groups: ArtifactGroup[] }[] = [];
+
+    // Popular (always first)
+    const popular = [...gradeFiltered]
+      .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+      .slice(0, 20);
+    if (popular.length > 0) {
+      rows.push({ key: 'popular', title: '🔥 Танымал', groups: popular });
+    }
+
+    // Per mode
+    for (const mode of modes) {
+      const modeGroups = gradeFiltered.filter((g) => g.modeId === mode.id);
+      if (modeGroups.length > 0) {
+        rows.push({
+          key: `mode-${mode.id}`,
+          title: `${mode.icon} ${mode.label}`,
+          groups: modeGroups,
+        });
       }
+    }
+
+    return rows;
+  }, [gradeFiltered, modes]);
+
+  // Full catalog filtering (grade + mode + topic + search)
+  const catalogGroups = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return gradeFiltered.filter((group) => {
+      if (selectedModeId && group.modeId !== selectedModeId) return false;
+      if (selectedTopicId && group.topicId !== selectedTopicId) return false;
       if (q) {
-        const matchesSearch =
+        const matches =
           group.title.toLowerCase().includes(q) ||
-          group.description.toLowerCase().includes(q) ||
-          (group.authorName || '').toLowerCase().includes(q);
-        if (!matchesSearch) return false;
+          group.description.toLowerCase().includes(q);
+        if (!matches) return false;
       }
       return true;
     });
-  }, [groups, groupsWithArtifacts, selectedSubjectId, selectedTagIds, searchQuery]);
+  }, [gradeFiltered, selectedModeId, selectedTopicId, searchQuery]);
 
-  // Split into featured and community
-  const featuredGroups = useMemo(
-    () => filteredGroups.filter((g) => g.isFeatured).sort((a, b) => (a.order || 0) - (b.order || 0)),
-    [filteredGroups]
+  // NEW badge helper
+  const isNew = useCallback((group: ArtifactGroup) => {
+    if (!group.createdAt) return false;
+    return Date.now() - group.createdAt.toMillis() < NEW_ARTIFACT_THRESHOLD_MS;
+  }, []);
+
+  const openModal = useCallback(
+    (group: ArtifactGroup, variantIndex: number) => {
+      const groupArtifacts = artifactsByGroup.get(group.id) || [];
+      if (groupArtifacts.length === 0) return;
+      setModalState({ group, artifacts: groupArtifacts, variantIndex });
+    },
+    [artifactsByGroup]
   );
 
-  const communityGroups = useMemo(() => {
-    const result = filteredGroups.filter((g) => !g.isFeatured);
-
-    if (sortBy === 'newest') {
-      result.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-    } else {
-      result.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
-    }
-
-    return result;
-  }, [filteredGroups, sortBy]);
-
-  const getSubject = (subjectId: string) =>
-    subjects.find((s) => s.id === subjectId);
-
-  // Group featured by subject for display
-  const featuredBySubject = useMemo(() => {
-    const grouped = new Map<string, ArtifactGroup[]>();
-    featuredGroups.forEach((group) => {
-      const subjectId = group.subjectId;
-      if (!grouped.has(subjectId)) grouped.set(subjectId, []);
-      grouped.get(subjectId)!.push(group);
-    });
-
-    return subjects
-      .filter((s) => grouped.has(s.id))
-      .sort((a, b) => a.order - b.order)
-      .map((subject) => ({
-        subject,
-        groups: grouped.get(subject.id) || [],
-      }));
-  }, [featuredGroups, subjects]);
-
-  const openModal = (group: ArtifactGroup, variantIndex: number) => {
-    const groupArtifacts = groupsWithArtifacts.artifactsByGroup.get(group.id) || [];
-    if (groupArtifacts.length === 0) return;
-    setModalState({ group, artifacts: groupArtifacts, variantIndex });
-  };
-
-  // Horizontal scroll refs for featured carousels
-  const scrollRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const setScrollRef = useCallback((subjectId: string) => (el: HTMLDivElement | null) => {
-    if (el) scrollRefs.current.set(subjectId, el);
-    else scrollRefs.current.delete(subjectId);
+  const handleHeroModeFilter = useCallback((modeId: string) => {
+    setSelectedModeId(modeId);
+    catalogRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const scrollCarousel = useCallback((subjectId: string, direction: 'left' | 'right') => {
-    const el = scrollRefs.current.get(subjectId);
-    if (el) el.scrollBy({ left: direction === 'left' ? -300 : 300, behavior: 'smooth' });
-  }, []);
-
-  const loading = authLoading || groupsLoading || artifactsLoading || subjectsLoading || tagsLoading;
-  const hasAnyResults = featuredGroups.length > 0 || communityGroups.length > 0;
+  const loading = groupsLoading || artifactsLoading || modesLoading || topicsLoading;
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
@@ -149,157 +162,54 @@ export const ShowcasePage = () => {
                 />
               </svg>
               <span className="text-base md:text-xl font-bold text-gray-900">
-                Random Teacher
+                Физика
               </span>
             </Link>
-
-            <div className="flex items-center gap-2 md:gap-3">
-              {user ? (
-                <>
-                  {isAdmin(user.email) && (
-                    <Link
-                      to="/admin"
-                      className="text-xs md:text-sm text-gray-600 hover:text-gray-900"
-                    >
-                      Әкімші
-                    </Link>
-                  )}
-                  <Link
-                    to="/my-artifacts"
-                    className="text-xs md:text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Артефакттарым
-                  </Link>
-                  <Link
-                    to="/dashboard"
-                    className="px-3 md:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs md:text-sm font-medium"
-                  >
-                    Сыныптар
-                  </Link>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  className="px-3 md:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs md:text-sm font-medium"
-                >
-                  Кіру
-                </Link>
-              )}
-            </div>
+            <Link
+              to={user ? '/dashboard' : '/login'}
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Мұғалімдер үшін
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero section */}
-      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
-          <div className="text-center">
-            <h1 className="text-xl md:text-3xl font-bold text-white mb-1 md:mb-2">
-              Интерактивті артефакттар
-            </h1>
-            <p className="text-sm md:text-base text-indigo-100 max-w-2xl mx-auto">
-              Сабақта қолдануға арналған Claude-артефакттар.
-              Симуляторлар, ойындар, тесттер және басқалар.
-            </p>
-            {!loading && (
-              <p className="text-xs md:text-sm text-indigo-200 mt-1">
-                {filteredGroups.length} артефакт
-              </p>
-            )}
-
-            {/* Search inside hero */}
-            <div className="relative max-w-xl mx-auto mt-4 md:mt-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Артефакт іздеу..."
-                className="w-full pl-12 pr-4 py-2.5 md:py-3 bg-white rounded-xl shadow-lg focus:ring-2 focus:ring-white/50 focus:outline-none text-sm md:text-base text-gray-900 placeholder-gray-400"
-              />
-            </div>
-
-            {user && (
-              <Link
-                to="/my-artifacts/new"
-                className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 bg-white/20 backdrop-blur text-white border border-white/30 rounded-lg hover:bg-white/30 transition-colors text-sm font-medium"
-              >
-                <Plus className="w-4 h-4" />
-                Артефакт жариялау
-              </Link>
-            )}
-          </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Hero Carousel */}
+          <HeroCarousel
+            modes={modes}
+            groups={gradeFiltered}
+            onArtifactClick={(group) => openModal(group, 0)}
+            onModeFilter={handleHeroModeFilter}
+          />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          </div>
-        ) : (
-          <>
-            {subjects.length > 0 && (
-              <div className="mb-4">
-                <SubjectFilter
-                  subjects={subjects}
-                  selectedId={selectedSubjectId}
-                  onChange={setSelectedSubjectId}
-                />
-              </div>
-            )}
-
-            <div className="mb-4">
-              <TagFilter
-                tags={tags}
-                selectedTagIds={selectedTagIds}
-                onChange={setSelectedTagIds}
+          {/* Grade Filter (sticky) */}
+          <div className="sticky top-0 z-20 bg-gray-50/95 backdrop-blur-sm border-b border-gray-200/50 py-3">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <GradeFilter
+                selectedGrade={selectedGrade}
+                onChange={setSelectedGrade}
               />
             </div>
+          </div>
 
-            {/* Sticky sort bar + result count */}
-            <div className="sticky top-0 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 mb-6 flex items-center justify-between">
-              <span className="text-xs md:text-sm text-gray-500">
-                Табылды: {filteredGroups.length} артефакт
-              </span>
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setSortBy('newest')}
-                  className={`px-2.5 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors ${
-                    sortBy === 'newest'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Жаңалар
-                </button>
-                <button
-                  onClick={() => setSortBy('popular')}
-                  className={`px-2.5 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors ${
-                    sortBy === 'popular'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Танымал
-                </button>
-              </div>
-            </div>
-
-            {!hasAnyResults ? (
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+            {gradeFiltered.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
                 <p className="text-gray-500 mb-2">
-                  {groups.length === 0
-                    ? 'Әзірге интерактивті артефакттар жоқ'
-                    : 'Таңдалған сүзгіден өткен артефакттар жоқ'}
+                  {groupsWithArtifacts.length === 0
+                    ? 'Әзірге артефакттар жоқ'
+                    : 'Таңдалған сынып бойынша артефакттар жоқ'}
                 </p>
-                {(selectedSubjectId || selectedTagIds.length > 0 || searchQuery) && (
+                {selectedGrade && (
                   <button
-                    onClick={() => {
-                      setSelectedSubjectId(null);
-                      setSelectedTagIds([]);
-                      setSearchQuery('');
-                    }}
+                    onClick={() => setSelectedGrade(null)}
                     className="text-indigo-600 hover:text-indigo-700"
                   >
                     Сүзгіні жою
@@ -307,108 +217,122 @@ export const ShowcasePage = () => {
                 )}
               </div>
             ) : (
-              <div className="space-y-10">
-                {/* Featured section */}
-                {featuredBySubject.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-amber-200">
-                      <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                      <h2 className="text-lg font-semibold text-gray-900">
-                        Ұсынылған
-                      </h2>
-                    </div>
-                    <div className="space-y-8">
-                      {featuredBySubject.map(({ subject, groups: subjectGroups }) => (
-                        <div key={subject.id}>
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-xl">{subject.icon}</span>
-                            <h3 className="text-base font-medium text-gray-800">
-                              {subject.name}
-                            </h3>
-                            <span className="text-sm text-gray-500">
-                              ({subjectGroups.length})
-                            </span>
-                          </div>
-                          {/* Horizontal carousel */}
-                          <div className="relative group/scroll">
-                            <div
-                              ref={setScrollRef(subject.id)}
-                              className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-2"
-                            >
-                              {subjectGroups.map((group) => (
-                                <div key={group.id} className="w-64 md:w-72 flex-shrink-0">
-                                  <ArtifactCard
-                                    group={group}
-                                    artifacts={groupsWithArtifacts.artifactsByGroup.get(group.id) || []}
-                                    subject={subject}
-                                    tags={tags}
-                                    onVariantClick={(index) => openModal(group, index)}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                            {/* Scroll arrows (desktop only) */}
-                            {subjectGroups.length > 3 && (
-                              <>
-                                <button
-                                  onClick={() => scrollCarousel(subject.id, 'left')}
-                                  className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-gray-200 text-gray-600 hover:text-gray-900 opacity-0 group-hover/scroll:opacity-100 transition-opacity"
-                                >
-                                  <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                <button
-                                  onClick={() => scrollCarousel(subject.id, 'right')}
-                                  className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-gray-200 text-gray-600 hover:text-gray-900 opacity-0 group-hover/scroll:opacity-100 transition-opacity"
-                                >
-                                  <ChevronRight className="w-5 h-5" />
-                                </button>
-                              </>
-                            )}
-                          </div>
+              <>
+                {/* Netflix-style Category Rows */}
+                <div className="space-y-8 md:space-y-10">
+                  {categoryRows.map((cat) => (
+                    <CategoryRow
+                      key={cat.key}
+                      title={cat.title}
+                      itemCount={cat.groups.length}
+                    >
+                      {cat.groups.map((group) => (
+                        <div key={group.id} className="w-72 md:w-80 flex-shrink-0">
+                          <ArtifactCard
+                            group={group}
+                            artifacts={artifactsByGroup.get(group.id) || []}
+                            mode={group.modeId ? modeMap.get(group.modeId) : undefined}
+                            onVariantClick={(index) => openModal(group, index)}
+                            showNewBadge={isNew(group)}
+                          />
                         </div>
                       ))}
-                    </div>
-                  </div>
-                )}
+                    </CategoryRow>
+                  ))}
+                </div>
 
-                {/* Community section */}
-                {communityGroups.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-200">
-                      <Users className="w-5 h-5 text-gray-600" />
-                      <h2 className="text-lg font-semibold text-gray-900">
-                        Мұғалімдерден
-                      </h2>
-                      <span className="text-sm text-gray-500">
-                        ({communityGroups.length})
-                      </span>
+                {/* Full Catalog Section */}
+                <div ref={catalogRef} className="mt-12 border-t border-gray-200 pt-8">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
+                    Барлық артефакттар
+                  </h2>
+
+                  {/* Filters */}
+                  <div className="space-y-4 mb-6">
+                    <div className="relative max-w-md">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Артефакт іздеу..."
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 focus:outline-none text-sm text-gray-900 placeholder-gray-400"
+                      />
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {communityGroups.map((group) => (
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <ModeFilter
+                        modes={modes}
+                        selectedModeId={selectedModeId}
+                        onChange={setSelectedModeId}
+                      />
+                    </div>
+
+                    <TopicFilterNew
+                      topics={topics}
+                      selectedTopicId={selectedTopicId}
+                      onChange={setSelectedTopicId}
+                    />
+                  </div>
+
+                  {/* Results count */}
+                  <p className="text-sm text-gray-500 mb-4">
+                    Табылды: {catalogGroups.length} артефакт
+                  </p>
+
+                  {catalogGroups.length === 0 ? (
+                    <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+                      <p className="text-gray-500 mb-2">
+                        Сүзгіден өткен артефакттар жоқ
+                      </p>
+                      <button
+                        onClick={() => {
+                          setSelectedModeId(null);
+                          setSelectedTopicId(null);
+                          setSearchQuery('');
+                        }}
+                        className="text-indigo-600 hover:text-indigo-700"
+                      >
+                        Сүзгіні жою
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                      {catalogGroups.map((group) => (
                         <ArtifactCard
                           key={group.id}
                           group={group}
-                          artifacts={groupsWithArtifacts.artifactsByGroup.get(group.id) || []}
-                          subject={getSubject(group.subjectId)}
-                          tags={tags}
+                          artifacts={artifactsByGroup.get(group.id) || []}
+                          mode={group.modeId ? modeMap.get(group.modeId) : undefined}
                           onVariantClick={(index) => openModal(group, index)}
+                          showNewBadge={isNew(group)}
                         />
                       ))}
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </>
             )}
-          </>
-        )}
-      </main>
+          </main>
 
+          {/* Footer */}
+          <footer className="mt-8 py-8 border-t border-gray-200 text-center">
+            <Link
+              to={user ? '/dashboard' : '/login'}
+              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Мұғалімдер үшін →
+            </Link>
+          </footer>
+        </>
+      )}
+
+      {/* Modal */}
       {modalState && (
         <ArtifactModal
           group={modalState.group}
           artifacts={modalState.artifacts}
           initialVariantIndex={modalState.variantIndex}
-          subject={getSubject(modalState.group.subjectId)}
           tags={tags}
           onClose={() => setModalState(null)}
         />
