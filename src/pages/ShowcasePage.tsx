@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useArtifactGroups } from '../hooks/useArtifactGroups';
@@ -6,22 +6,12 @@ import { useArtifacts } from '../hooks/useArtifacts';
 import { useModes } from '../hooks/useModes';
 import { useTopics } from '../hooks/useTopics';
 import { ArtifactCard } from '../components/showcase/ArtifactCard';
-import { ArtifactModal } from '../components/showcase/ArtifactModal';
-import { HeroCarousel } from '../components/showcase/HeroCarousel';
 import { GradeFilter } from '../components/showcase/GradeFilter';
-import { CategoryRow } from '../components/showcase/CategoryRow';
 import { ModeFilter } from '../components/showcase/ModeFilter';
 import { TopicFilterNew } from '../components/showcase/TopicFilterNew';
 import { NEW_ARTIFACT_THRESHOLD_MS } from '../config/physicsConstants';
 import { Search } from 'lucide-react';
 import type { Artifact, ArtifactGroup } from '../types/artifact.types';
-import { useTags } from '../hooks/useTags';
-
-interface ModalState {
-  group: ArtifactGroup;
-  artifacts: Artifact[];
-  variantIndex: number;
-}
 
 export const ShowcasePage = () => {
   const { user } = useAuth();
@@ -29,15 +19,11 @@ export const ShowcasePage = () => {
   const { artifacts, loading: artifactsLoading } = useArtifacts();
   const { modes, loading: modesLoading } = useModes();
   const { topics, loading: topicsLoading } = useTopics();
-  const { tags } = useTags();
 
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedModeId, setSelectedModeId] = useState<string | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [modalState, setModalState] = useState<ModalState | null>(null);
-
-  const catalogRef = useRef<HTMLDivElement>(null);
 
   // Join groups with their artifacts
   const artifactsByGroup = useMemo(() => {
@@ -75,34 +61,7 @@ export const ShowcasePage = () => {
     return map;
   }, [modes]);
 
-  // Netflix-style category rows (dynamic from modes)
-  const categoryRows = useMemo(() => {
-    const rows: { key: string; title: string; groups: ArtifactGroup[] }[] = [];
-
-    // Popular (always first)
-    const popular = [...gradeFiltered]
-      .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-      .slice(0, 20);
-    if (popular.length > 0) {
-      rows.push({ key: 'popular', title: '🔥 Танымал', groups: popular });
-    }
-
-    // Per mode
-    for (const mode of modes) {
-      const modeGroups = gradeFiltered.filter((g) => g.modeId === mode.id);
-      if (modeGroups.length > 0) {
-        rows.push({
-          key: `mode-${mode.id}`,
-          title: `${mode.icon} ${mode.label}`,
-          groups: modeGroups,
-        });
-      }
-    }
-
-    return rows;
-  }, [gradeFiltered, modes]);
-
-  // Full catalog filtering (grade + mode + topic + search)
+  // Catalog filtering (grade + mode + topic + search)
   const catalogGroups = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return gradeFiltered.filter((group) => {
@@ -119,24 +78,10 @@ export const ShowcasePage = () => {
   }, [gradeFiltered, selectedModeId, selectedTopicId, searchQuery]);
 
   // NEW badge helper
-  const isNew = useCallback((group: ArtifactGroup) => {
+  const isNew = (group: ArtifactGroup) => {
     if (!group.createdAt) return false;
     return Date.now() - group.createdAt.toMillis() < NEW_ARTIFACT_THRESHOLD_MS;
-  }, []);
-
-  const openModal = useCallback(
-    (group: ArtifactGroup, variantIndex: number) => {
-      const groupArtifacts = artifactsByGroup.get(group.id) || [];
-      if (groupArtifacts.length === 0) return;
-      setModalState({ group, artifacts: groupArtifacts, variantIndex });
-    },
-    [artifactsByGroup]
-  );
-
-  const handleHeroModeFilter = useCallback((modeId: string) => {
-    setSelectedModeId(modeId);
-    catalogRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+  };
 
   const loading = groupsLoading || artifactsLoading || modesLoading || topicsLoading;
 
@@ -181,14 +126,6 @@ export const ShowcasePage = () => {
         </div>
       ) : (
         <>
-          {/* Hero Carousel */}
-          <HeroCarousel
-            modes={modes}
-            groups={gradeFiltered}
-            onArtifactClick={(group) => openModal(group, 0)}
-            onModeFilter={handleHeroModeFilter}
-          />
-
           {/* Grade Filter (sticky) */}
           <div className="sticky top-0 z-20 bg-gray-50/95 backdrop-blur-sm border-b border-gray-200/50 py-3">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -200,6 +137,15 @@ export const ShowcasePage = () => {
           </div>
 
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+            <div className="mb-4">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                Интерактивті физика артефакттары
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Сыныбыңды таңда, артефактты аш
+              </p>
+            </div>
+
             {gradeFiltered.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
                 <p className="text-gray-500 mb-2">
@@ -218,99 +164,70 @@ export const ShowcasePage = () => {
               </div>
             ) : (
               <>
-                {/* Netflix-style Category Rows */}
-                <div className="space-y-8 md:space-y-10">
-                  {categoryRows.map((cat) => (
-                    <CategoryRow
-                      key={cat.key}
-                      title={cat.title}
-                      itemCount={cat.groups.length}
-                    >
-                      {cat.groups.map((group) => (
-                        <div key={group.id} className="w-72 md:w-80 flex-shrink-0">
-                          <ArtifactCard
-                            group={group}
-                            artifacts={artifactsByGroup.get(group.id) || []}
-                            mode={group.modeId ? modeMap.get(group.modeId) : undefined}
-                            onVariantClick={(index) => openModal(group, index)}
-                            showNewBadge={isNew(group)}
-                          />
-                        </div>
-                      ))}
-                    </CategoryRow>
-                  ))}
-                </div>
-
-                {/* Full Catalog Section */}
-                <div ref={catalogRef} className="mt-12 border-t border-gray-200 pt-8">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
-                    Барлық артефакттар
-                  </h2>
-
-                  {/* Filters */}
-                  <div className="space-y-4 mb-6">
-                    <div className="relative max-w-md">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Артефакт іздеу..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 focus:outline-none text-sm text-gray-900 placeholder-gray-400"
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <ModeFilter
-                        modes={modes}
-                        selectedModeId={selectedModeId}
-                        onChange={setSelectedModeId}
-                      />
-                    </div>
-
-                    <TopicFilterNew
-                      topics={topics}
-                      selectedTopicId={selectedTopicId}
-                      onChange={setSelectedTopicId}
+                {/* Filters */}
+                <div className="space-y-4 mb-6">
+                  <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Артефакт іздеу..."
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 focus:outline-none text-sm text-gray-900 placeholder-gray-400"
                     />
                   </div>
 
-                  {/* Results count */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <ModeFilter
+                      modes={modes}
+                      selectedModeId={selectedModeId}
+                      onChange={setSelectedModeId}
+                    />
+                  </div>
+
+                  <TopicFilterNew
+                    topics={topics}
+                    selectedTopicId={selectedTopicId}
+                    onChange={setSelectedTopicId}
+                  />
+                </div>
+
+                {/* Results count (only with active filters) */}
+                {(selectedModeId || selectedTopicId || searchQuery.trim()) && (
                   <p className="text-sm text-gray-500 mb-4">
                     Табылды: {catalogGroups.length} артефакт
                   </p>
+                )}
 
-                  {catalogGroups.length === 0 ? (
-                    <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
-                      <p className="text-gray-500 mb-2">
-                        Сүзгіден өткен артефакттар жоқ
-                      </p>
-                      <button
-                        onClick={() => {
-                          setSelectedModeId(null);
-                          setSelectedTopicId(null);
-                          setSearchQuery('');
-                        }}
-                        className="text-indigo-600 hover:text-indigo-700"
-                      >
-                        Сүзгіні жою
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
-                      {catalogGroups.map((group) => (
-                        <ArtifactCard
-                          key={group.id}
-                          group={group}
-                          artifacts={artifactsByGroup.get(group.id) || []}
-                          mode={group.modeId ? modeMap.get(group.modeId) : undefined}
-                          onVariantClick={(index) => openModal(group, index)}
-                          showNewBadge={isNew(group)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
+                {catalogGroups.length === 0 ? (
+                  <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+                    <p className="text-gray-500 mb-2">
+                      Сүзгіден өткен артефакттар жоқ
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSelectedModeId(null);
+                        setSelectedTopicId(null);
+                        setSearchQuery('');
+                      }}
+                      className="text-indigo-600 hover:text-indigo-700"
+                    >
+                      Сүзгіні жою
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                    {catalogGroups.map((group) => (
+                      <ArtifactCard
+                        key={group.id}
+                        group={group}
+                        artifacts={artifactsByGroup.get(group.id) || []}
+                        mode={group.modeId ? modeMap.get(group.modeId) : undefined}
+                        showNewBadge={isNew(group)}
+                      />
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </main>
@@ -325,17 +242,6 @@ export const ShowcasePage = () => {
             </Link>
           </footer>
         </>
-      )}
-
-      {/* Modal */}
-      {modalState && (
-        <ArtifactModal
-          group={modalState.group}
-          artifacts={modalState.artifacts}
-          initialVariantIndex={modalState.variantIndex}
-          tags={tags}
-          onClose={() => setModalState(null)}
-        />
       )}
     </div>
   );

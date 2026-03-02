@@ -10,10 +10,10 @@ export const TopicFilterNew = ({ topics, selectedTopicId, onChange }: TopicFilte
   if (topics.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex gap-2 overflow-x-auto scrollbar-hide">
       <button
         onClick={() => onChange(null)}
-        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
           selectedTopicId === null
             ? 'bg-indigo-600 text-white'
             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -25,7 +25,7 @@ export const TopicFilterNew = ({ topics, selectedTopicId, onChange }: TopicFilte
         <button
           key={topic.id}
           onClick={() => onChange(selectedTopicId === topic.id ? null : topic.id)}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
             selectedTopicId === topic.id
               ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

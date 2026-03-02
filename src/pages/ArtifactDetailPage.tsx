@@ -1,25 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { artifactGroupService } from '../services/artifactGroupService';
 import { artifactService } from '../services/artifactService';
 import { normalizeArtifactGroup } from '../utils/artifactHelpers';
 import { getEmbedUrl, getViewUrl } from '../utils/artifactUrl';
-import { useSubjects } from '../hooks/useSubjects';
-import { useTags } from '../hooks/useTags';
 import type { Artifact, ArtifactGroup } from '../types/artifact.types';
 import { ArrowLeft, Copy, ExternalLink, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const ArtifactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { subjects } = useSubjects();
-  const { tags } = useTags();
-
+  const [searchParams] = useSearchParams();
+  const initialVariant = Number(searchParams.get('v')) || 0;
   const [group, setGroup] = useState<ArtifactGroup | null>(null);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(initialVariant);
   const [iframeLoading, setIframeLoading] = useState(true);
   const [iframeError, setIframeError] = useState(false);
   const viewCountedRef = useRef(false);
@@ -44,6 +41,11 @@ export const ArtifactDetailPage = () => {
         groupArtifacts.sort((a, b) => (a.order || 0) - (b.order || 0));
         setArtifacts(groupArtifacts);
 
+        // Clamp initialVariant to valid range
+        if (initialVariant >= groupArtifacts.length) {
+          setActiveIndex(0);
+        }
+
         if (!viewCountedRef.current) {
           viewCountedRef.current = true;
           artifactGroupService.incrementViewCount(id).catch(() => {});
@@ -63,10 +65,6 @@ export const ArtifactDetailPage = () => {
   const embedUrl = currentArtifact ? getEmbedUrl(currentArtifact.embedUrl) : '';
   const viewUrl = currentArtifact ? getViewUrl(currentArtifact.embedUrl) : '';
   const hasMultipleVariants = artifacts.length > 1;
-  const subject = group ? subjects.find((s) => s.id === group.subjectId) : undefined;
-
-  const getTagLabel = (tagId: string) =>
-    tags.find((t) => t.id === tagId)?.label || tagId;
 
   const switchVariant = (index: number) => {
     if (index === activeIndex) return;
@@ -121,9 +119,6 @@ export const ArtifactDetailPage = () => {
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              {subject && (
-                <span className="text-xl md:text-2xl flex-shrink-0">{subject.icon}</span>
-              )}
               <div className="min-w-0">
                 <h1 className="text-sm md:text-lg font-bold text-gray-900 truncate">
                   {group.title}
@@ -141,17 +136,6 @@ export const ArtifactDetailPage = () => {
             </div>
 
             <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <div className="hidden sm:flex flex-wrap gap-1">
-                {group.tags.slice(0, 3).map((tagId) => (
-                  <span
-                    key={tagId}
-                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
-                  >
-                    {getTagLabel(tagId)}
-                  </span>
-                ))}
-              </div>
-
               <button
                 onClick={copyLink}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"

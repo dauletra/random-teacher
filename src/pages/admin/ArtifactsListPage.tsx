@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { useArtifactGroups } from '../../hooks/useArtifactGroups';
 import { useArtifacts } from '../../hooks/useArtifacts';
-import { useSubjects } from '../../hooks/useSubjects';
-import { useTags } from '../../hooks/useTags';
 import { artifactGroupService } from '../../services/artifactGroupService';
 import { migrateArtifactsToGroups } from '../../utils/migrateArtifacts';
 import { normalizeArtifactGroup } from '../../utils/artifactHelpers';
@@ -14,8 +12,6 @@ import toast from 'react-hot-toast';
 export const ArtifactsListPage = () => {
   const { groups, loading: groupsLoading } = useArtifactGroups();
   const { artifacts, loading: artifactsLoading } = useArtifacts();
-  const { subjects } = useSubjects();
-  const { tags } = useTags();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [migrating, setMigrating] = useState(false);
 
@@ -41,16 +37,6 @@ export const ArtifactsListPage = () => {
   // Проверяем, есть ли немигрированные артефакты (без groupId)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasLegacyArtifacts = artifacts.some((a: any) => !a.groupId);
-
-  const getSubjectName = (subjectId: string) => {
-    const subject = subjects.find((s) => s.id === subjectId);
-    return subject?.name || 'Пәнсіз';
-  };
-
-  const getTagLabel = (tagId: string) => {
-    const tag = tags.find((t) => t.id === tagId);
-    return tag?.label || tagId;
-  };
 
   const handleDelete = async (group: ArtifactGroup) => {
     const count = variantCounts.get(group.id) || 0;
@@ -139,12 +125,6 @@ export const ArtifactsListPage = () => {
                   Атауы
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Пәні
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Тегтер
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Нұсқалар
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -170,28 +150,6 @@ export const ArtifactsListPage = () => {
                         {group.description}
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900">
-                      {getSubjectName(group.subjectId)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {group.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {getTagLabel(tag)}
-                        </span>
-                      ))}
-                      {group.tags.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{group.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-700">

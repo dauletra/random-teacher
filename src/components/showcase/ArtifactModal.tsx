@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Artifact, ArtifactGroup, Subject, Tag } from '../../types/artifact.types';
+import type { Artifact, ArtifactGroup } from '../../types/artifact.types';
 import { getEmbedUrl, getViewUrl } from '../../utils/artifactUrl';
 import { artifactGroupService } from '../../services/artifactGroupService';
 import toast from 'react-hot-toast';
@@ -8,8 +8,6 @@ interface ArtifactModalProps {
   group: ArtifactGroup;
   artifacts: Artifact[];
   initialVariantIndex?: number;
-  subject?: Subject;
-  tags: Tag[];
   onClose: () => void;
 }
 
@@ -17,8 +15,6 @@ export const ArtifactModal = ({
   group,
   artifacts,
   initialVariantIndex = 0,
-  subject,
-  tags,
   onClose,
 }: ArtifactModalProps) => {
   const [activeIndex, setActiveIndex] = useState(initialVariantIndex);
@@ -37,11 +33,6 @@ export const ArtifactModal = ({
   const embedUrl = currentArtifact ? getEmbedUrl(currentArtifact.embedUrl) : '';
   const viewUrl = currentArtifact ? getViewUrl(currentArtifact.embedUrl) : '';
   const hasMultipleVariants = artifacts.length > 1;
-
-  const getTagLabel = (tagId: string) => {
-    const tag = tags.find((t) => t.id === tagId);
-    return tag?.label || tagId;
-  };
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -97,9 +88,6 @@ export const ArtifactModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            {subject && (
-              <span className="text-2xl flex-shrink-0">{subject.icon}</span>
-            )}
             <div className="min-w-0">
               <h2 className="text-lg md:text-xl font-bold text-gray-900 truncate">
                 {group.title}
@@ -113,17 +101,6 @@ export const ArtifactModal = ({
           </div>
 
           <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-            <div className="hidden sm:flex flex-wrap gap-1">
-              {group.tags.map((tagId) => (
-                <span
-                  key={tagId}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
-                >
-                  {getTagLabel(tagId)}
-                </span>
-              ))}
-            </div>
-
             <button
               onClick={copyLink}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"

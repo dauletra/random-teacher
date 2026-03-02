@@ -43,8 +43,6 @@ export async function migrateArtifactsToGroups(): Promise<number> {
     const groupId = await createDocument<ArtifactGroup>(COLLECTIONS.ARTIFACT_GROUPS, {
       title: artifact.title,
       description: artifact.description || '',
-      subjectId: artifact.subjectId,
-      tags: artifact.tags || [],
       thumbnail: artifact.thumbnail,
       order: artifact.order || 0,
       isPublic: artifact.isPublic ?? true,

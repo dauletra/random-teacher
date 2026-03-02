@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSubjects } from '../../hooks/useSubjects';
-import { useTags } from '../../hooks/useTags';
 import { useModes } from '../../hooks/useModes';
 import { useTopics } from '../../hooks/useTopics';
 import { GRADES } from '../../config/physicsConstants';
@@ -41,8 +39,6 @@ export const ArtifactEditForm = ({
   authorPhotoURL,
 }: ArtifactEditFormProps) => {
   const navigate = useNavigate();
-  const { subjects, loading: subjectsLoading } = useSubjects();
-  const { tags, loading: tagsLoading } = useTags();
   const { modes, loading: modesLoading } = useModes();
   const { topics, loading: topicsLoading } = useTopics();
   const isNew = !initialGroupId || initialGroupId === 'new';
@@ -52,8 +48,6 @@ export const ArtifactEditForm = ({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    subjectId: '',
-    tags: [] as string[],
     thumbnail: '',
     thumbnailPublicId: '',
     order: 0,
@@ -89,8 +83,6 @@ export const ArtifactEditForm = ({
         setFormData({
           title: group.title,
           description: group.description,
-          subjectId: group.subjectId,
-          tags: group.tags,
           thumbnail: group.thumbnail || '',
           thumbnailPublicId: '',
           order: group.order,
@@ -134,11 +126,6 @@ export const ArtifactEditForm = ({
       return;
     }
 
-    if (!formData.subjectId) {
-      toast.error('Пәнді таңдаңыз');
-      return;
-    }
-
     const validVariants = variants.filter((v) => v.artifactUrl.trim());
     if (validVariants.length === 0) {
       toast.error('Ең болмағанда нұсқа егізіңіз');
@@ -161,8 +148,6 @@ export const ArtifactEditForm = ({
       const groupData: Record<string, any> = {
         title: formData.title.trim(),
         description: formData.description.trim(),
-        subjectId: formData.subjectId,
-        tags: formData.tags,
         thumbnail: formData.thumbnail.trim() || undefined,
         order: mode === 'admin' ? formData.order : 0,
         isPublic: mode === 'admin' ? formData.isPublic : true,
@@ -230,15 +215,6 @@ export const ArtifactEditForm = ({
     }
   };
 
-  const toggleTag = (tagId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.includes(tagId)
-        ? prev.tags.filter((t) => t !== tagId)
-        : [...prev.tags, tagId],
-    }));
-  };
-
   const addVariant = () => {
     if (variants.length >= MAX_VARIANTS) {
       toast.error(`Максимум ${MAX_VARIANTS} нұсқа`);
@@ -264,7 +240,7 @@ export const ArtifactEditForm = ({
     );
   };
 
-  if (loading || subjectsLoading || tagsLoading || modesLoading || topicsLoading) {
+  if (loading || modesLoading || topicsLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -307,59 +283,6 @@ export const ArtifactEditForm = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             placeholder="Қысқаша сипаттамасы"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Пән *
-          </label>
-          <select
-            value={formData.subjectId}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, subjectId: e.target.value }))
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="">Таңдаңыз предмет</option>
-            {subjects.map((subject) => (
-              <option key={subject.id} value={subject.id}>
-                {subject.icon} {subject.name}
-              </option>
-            ))}
-          </select>
-          {subjects.length === 0 && (
-            <p className="mt-1 text-sm text-amber-600">
-              Алдымен "Пәндер" бөлімінде пән қосыңыз
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Тегтер
-          </label>
-          {tags.length === 0 ? (
-            <p className="text-sm text-amber-600">
-              Алдымен "Тегтер" бөліміне тегтер қосыңыз
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => toggleTag(tag.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    formData.tags.includes(tag.id)
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {tag.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         <div>

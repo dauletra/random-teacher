@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyArtifactGroups } from '../hooks/useMyArtifactGroups';
 import { useArtifacts } from '../hooks/useArtifacts';
-import { useSubjects } from '../hooks/useSubjects';
 import { artifactGroupService } from '../services/artifactGroupService';
 import { Eye, Plus, Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -10,8 +9,6 @@ import toast from 'react-hot-toast';
 export const MyArtifactsPage = () => {
   const { groups, loading: groupsLoading } = useMyArtifactGroups();
   const { artifacts, loading: artifactsLoading } = useArtifacts();
-  const { subjects } = useSubjects();
-
   const artifactsByGroup = useMemo(() => {
     const map = new Map<string, number>();
     for (const a of artifacts) {
@@ -20,9 +17,6 @@ export const MyArtifactsPage = () => {
     }
     return map;
   }, [artifacts]);
-
-  const getSubject = (subjectId: string) =>
-    subjects.find((s) => s.id === subjectId);
 
   const handleDelete = async (groupId: string, title: string) => {
     if (!window.confirm(`"${title}" артефактын жою керек пе?`)) return;
@@ -76,7 +70,6 @@ export const MyArtifactsPage = () => {
       ) : (
         <div className="space-y-3">
           {groups.map((group) => {
-            const subject = getSubject(group.subjectId);
             const variantCount = artifactsByGroup.get(group.id) || 0;
 
             return (
@@ -84,16 +77,11 @@ export const MyArtifactsPage = () => {
                 key={group.id}
                 className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 p-4 hover:border-gray-300 transition-colors"
               >
-                {subject && (
-                  <span className="text-2xl flex-shrink-0">{subject.icon}</span>
-                )}
-
                 <div className="min-w-0 flex-1">
                   <h3 className="font-semibold text-gray-900 truncate">
                     {group.title}
                   </h3>
                   <div className="flex items-center gap-3 text-sm text-gray-500 mt-0.5">
-                    {subject && <span>{subject.name}</span>}
                     {variantCount > 0 && (
                       <span>{variantCount} нұсқа</span>
                     )}

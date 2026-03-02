@@ -12,8 +12,6 @@ import { ClassSettingsPage } from './pages/ClassSettingsPage';
 import { JournalPage } from './pages/JournalPage';
 import { ArtifactsListPage } from './pages/admin/ArtifactsListPage';
 import { ArtifactEditPage } from './pages/admin/ArtifactEditPage';
-import { SubjectsPage } from './pages/admin/SubjectsPage';
-import { TagsPage } from './pages/admin/TagsPage';
 import { ModesPage } from './pages/admin/ModesPage';
 import { TopicsPage } from './pages/admin/TopicsPage';
 import { MyArtifactsPage } from './pages/MyArtifactsPage';
@@ -142,22 +140,6 @@ function App() {
             element={
               <AdminRoute>
                 <ArtifactEditPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/subjects"
-            element={
-              <AdminRoute>
-                <SubjectsPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/tags"
-            element={
-              <AdminRoute>
-                <TagsPage />
               </AdminRoute>
             }
           />

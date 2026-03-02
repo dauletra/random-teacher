@@ -10,10 +10,10 @@ export const ModeFilter = ({ modes, selectedModeId, onChange }: ModeFilterProps)
   if (modes.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex gap-2 overflow-x-auto scrollbar-hide">
       <button
         onClick={() => onChange(null)}
-        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
           selectedModeId === null
             ? 'bg-indigo-600 text-white'
             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -25,7 +25,7 @@ export const ModeFilter = ({ modes, selectedModeId, onChange }: ModeFilterProps)
         <button
           key={mode.id}
           onClick={() => onChange(selectedModeId === mode.id ? null : mode.id)}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${
+          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1 flex-shrink-0 ${
             selectedModeId === mode.id
               ? mode.color + ' ring-2 ring-indigo-400 ring-offset-1'
               : mode.color + ' opacity-80 hover:opacity-100'

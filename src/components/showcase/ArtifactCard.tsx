@@ -1,19 +1,29 @@
+import { Link } from 'react-router-dom';
 import type { Artifact, ArtifactGroup, Mode } from '../../types/artifact.types';
 import { getOptimizedThumbnail } from '../../utils/thumbnailOptimizer';
-import { Eye, Link as LinkIcon } from 'lucide-react';
+import { ExternalLink, Eye, Link as LinkIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const GRADIENTS = [
+  'from-indigo-100 to-purple-100',
+  'from-emerald-100 to-teal-100',
+  'from-amber-100 to-orange-100',
+  'from-rose-100 to-pink-100',
+  'from-sky-100 to-blue-100',
+  'from-violet-100 to-fuchsia-100',
+];
 
 interface ArtifactCardProps {
   group: ArtifactGroup;
   artifacts: Artifact[];
   mode?: Mode;
-  onVariantClick: (variantIndex: number) => void;
   showNewBadge?: boolean;
 }
 
-export const ArtifactCard = ({ group, artifacts, mode, onVariantClick, showNewBadge }: ArtifactCardProps) => {
+export const ArtifactCard = ({ group, artifacts, mode, showNewBadge }: ArtifactCardProps) => {
   const hasMultipleVariants = artifacts.length > 1;
   const thumbnailUrl = group.thumbnail ? getOptimizedThumbnail(group.thumbnail) : null;
+  const gradient = GRADIENTS[group.id.charCodeAt(0) % GRADIENTS.length];
 
   const formatViewCount = (count: number) => {
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
@@ -21,6 +31,7 @@ export const ArtifactCard = ({ group, artifacts, mode, onVariantClick, showNewBa
   };
 
   const copyLink = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(`${window.location.origin}/artifacts/${group.id}`);
@@ -32,11 +43,11 @@ export const ArtifactCard = ({ group, artifacts, mode, onVariantClick, showNewBa
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-indigo-300 hover:-translate-y-1 transition-all duration-200 text-left w-full group">
-      <button
-        onClick={() => onVariantClick(0)}
-        className="w-full text-left"
+      <Link
+        to={`/artifacts/${group.id}`}
+        className="block"
       >
-        <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center relative overflow-hidden">
+        <div className={`aspect-video bg-gradient-to-br ${gradient} flex items-center justify-center relative overflow-hidden`}>
           {thumbnailUrl ? (
             <img
               src={thumbnailUrl}
@@ -55,13 +66,6 @@ export const ArtifactCard = ({ group, artifacts, mode, onVariantClick, showNewBa
           {showNewBadge && (
             <span className="absolute top-2 left-2 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">
               NEW
-            </span>
-          )}
-
-          {/* Variant count */}
-          {hasMultipleVariants && (
-            <span className="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-medium px-2 py-0.5 rounded-full">
-              {artifacts.length}
             </span>
           )}
 
@@ -85,23 +89,24 @@ export const ArtifactCard = ({ group, artifacts, mode, onVariantClick, showNewBa
             </p>
           )}
         </div>
-      </button>
+      </Link>
 
-      {/* Variant chips */}
+      {/* Variant links */}
       {hasMultipleVariants && (
         <div className="px-4 pb-2">
-          <div className="flex flex-wrap gap-1.5 mb-2">
+          <div className="flex items-center gap-1 flex-wrap mb-2">
+            <span className="text-xs text-gray-400">Нұсқалар:</span>
             {artifacts.map((artifact, index) => (
-              <button
-                key={artifact.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onVariantClick(index);
-                }}
-                className="px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
-              >
-                {artifact.variantLabel}
-              </button>
+              <span key={artifact.id} className="inline-flex items-center">
+                {index > 0 && <span className="text-gray-300 mx-1">·</span>}
+                <Link
+                  to={`/artifacts/${group.id}?v=${index}`}
+                  className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center gap-0.5"
+                >
+                  {artifact.variantLabel}
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </Link>
+              </span>
             ))}
           </div>
         </div>
@@ -118,7 +123,7 @@ export const ArtifactCard = ({ group, artifacts, mode, onVariantClick, showNewBa
           {group.grade?.map((g) => (
             <span
               key={g}
-              className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+              className="px-2 py-0.5 rounded-full text-xs font-medium border border-gray-300 text-gray-500"
             >
               {g}-сынып
             </span>

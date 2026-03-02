@@ -7,6 +7,7 @@ interface GradeFilterProps {
 
 export const GradeFilter = ({ selectedGrade, onChange }: GradeFilterProps) => {
   return (
+    <div className="relative">
     <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide">
       <button
         onClick={() => onChange(null)}
@@ -31,6 +32,8 @@ export const GradeFilter = ({ selectedGrade, onChange }: GradeFilterProps) => {
           {g}-сынып
         </button>
       ))}
+    </div>
+    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 pointer-events-none md:hidden" />
     </div>
   );
 };
