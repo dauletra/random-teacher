@@ -96,3 +96,5 @@ coverage/
 
 # Project specific
 # Добавьте сюда специфичные для проекта файлы
+
+.claude
